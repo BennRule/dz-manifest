@@ -980,6 +980,31 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 .wx-lp-controls { display: flex; gap: 6px; margin-bottom: 8px; }
 .lp-hand-btn { flex: 1; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 5px; border: 1px solid var(--slate-200); background: white; color: var(--slate-500); border-radius: 5px; cursor: pointer; }
 .lp-hand-btn.active { background: var(--slate-800); color: white; border-color: var(--slate-800); }
+.lp-mode-btn { flex: 1; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px; border: 1px solid var(--slate-300); background: white; color: var(--slate-600); cursor: pointer; }
+.lp-mode-btn:first-child { border-radius: 6px 0 0 6px; }
+.lp-mode-btn:last-child { border-radius: 0 6px 6px 0; border-left: none; }
+.lp-mode-btn.active { background: var(--slate-800); border-color: var(--slate-800); color: white; }
+.lp-mode { gap: 0; }
+.lp-3d-btn { display: block; width: 100%; max-width: 280px; margin: 8px auto 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 7px; border-radius: 6px; border: 1px solid var(--slate-800); background: var(--slate-800); color: white; cursor: pointer; }
+.lp-3d-btn:hover { background: var(--slate-700); }
+.ri-controls { font-size: 11px; color: var(--slate-500); display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 10px; margin-bottom: 8px; }
+.ri-controls input[type=number] { width: 52px; font-family: 'DM Mono', monospace; font-size: 12px; padding: 2px 4px; border: 1px solid var(--slate-200); border-radius: 4px; text-align: center; }
+.ri-controls label { display: inline-flex; align-items: center; gap: 4px; }
+.ri-info { margin-top: 8px; }
+.ri-sep { display: flex; gap: 6px; margin: 8px 0 6px; }
+.ri-sep div { flex: 1; text-align: center; border: 1px solid var(--slate-200); border-radius: 6px; padding: 6px 4px; }
+.ri-sep b { display: block; font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: var(--slate-900); }
+.ri-sep span { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); font-family: 'Barlow Condensed', sans-serif; font-weight: 600; }
+.ri-warn { font-size: 12px; color: #b45309; background: #fef3c7; border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; line-height: 1.4; }
+.ri-line { stroke: #38bdf8; stroke-width: 3.5; fill: none; }
+.ri-head { fill: #38bdf8; }
+.ri-tick { fill: #fde047; stroke: rgba(0,0,0,0.7); stroke-width: 1; }
+.ri-upper { stroke: #ffffff; stroke-width: 3; }
+.ri-upperhead { fill: #ffffff; }
+.lp3d { display: none; position: fixed; inset: 0; z-index: 1000; background: #020617; align-items: center; justify-content: center; }
+.lp3d.open { display: flex; }
+.lp3d canvas { display: block; width: min(100vw, 160vh); height: auto; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.lp3d canvas.dragging { cursor: grabbing; }
 .lp-canopy { font-size: 11px; color: var(--slate-500); text-align: center; margin-bottom: 8px; }
 .lp-canopy input { width: 44px; font-family: 'DM Mono', monospace; font-size: 12px; padding: 2px 4px; border: 1px solid var(--slate-200); border-radius: 4px; text-align: center; }
 .lp-map { position: relative; width: 100%; max-width: 280px; margin: 2px auto; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--slate-200); background: var(--slate-100); }
@@ -1286,15 +1311,39 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     <div class="wx-panel">
       <div class="wx-title">&#127788;&#65039; Weather</div>
       <div id="wxContent"><div class="wx-muted">Loading&hellip;</div></div>
-      <div class="wx-title" style="margin-top:16px;">&#129517; Landing Pattern</div>
-      <div class="wx-lp-controls">
-        <button class="lp-hand-btn active" data-hand="left">Left-hand</button>
-        <button class="lp-hand-btn" data-hand="right">Right-hand</button>
+      <div class="wx-title" style="margin-top:16px;">&#129517; <span id="lpTitle">Landing Pattern</span></div>
+      <div class="wx-lp-controls lp-mode">
+        <button class="lp-mode-btn active" data-mode="landing">Landing pattern</button>
+        <button class="lp-mode-btn" data-mode="runin">Run-in</button>
       </div>
-      <div class="lp-canopy">Glide ratio 1 : <input type="number" id="glideRatio" min="1" max="6" step="0.1" value="3"></div>
+      <div id="lpLandingControls">
+        <div class="wx-lp-controls">
+          <button class="lp-hand-btn active" data-hand="left">Left-hand</button>
+          <button class="lp-hand-btn" data-hand="right">Right-hand</button>
+        </div>
+        <div class="lp-canopy">Glide ratio 1 : <input type="number" id="glideRatio" min="1" max="6" step="0.1" value="3"></div>
+      </div>
+      <div id="lpRunInControls" class="ri-controls" style="display:none;">
+        <label>Run-in <input type="number" id="riHeading" min="0" max="359" step="5">&deg;</label>
+        <label><input type="checkbox" id="riAuto" checked> Auto (into upper wind)</label>
+        <label>Aircraft TAS <input type="number" id="riTas" min="50" max="180" step="5"> kt</label>
+      </div>
       <div id="wxLanding"><div class="wx-muted">&hellip;</div></div>
+      <button class="lp-3d-btn" id="lp3dBtn" type="button">&#9635; 3D view of the pattern</button>
+      <div class="ri-info" id="riInfo" style="display:none;"></div>
     </div>
   </aside>
+</div>
+
+<!-- 3D landing pattern -->
+<div class="lp3d" id="lp3d">
+  <canvas id="lp3dCanvas" width="1280" height="800"></canvas>
+  <div class="track-tools">
+    <button type="button" data-tool="in" title="Move closer">+</button>
+    <button type="button" data-tool="out" title="Move back">&minus;</button>
+    <button type="button" data-tool="reset" title="Back to the starting view">Reset</button>
+    <button type="button" data-tool="close" title="Close (Esc)">Close</button>
+  </div>
 </div>
 
 <!-- Settings modal -->
@@ -1454,6 +1503,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   let weather = null;        // Open-Meteo forecast (ground + winds aloft)
   let weatherTimer = null;
   let landingHand = 'left';  // landing-pattern circuit direction
+  let lpMode = localStorage.getItem('hm_lpMode') === 'runin' ? 'runin' : 'landing'; // sidebar map: landing pattern or run-in
+  let riTas = parseInt(localStorage.getItem('hm_riTas'), 10) || 90;                  // aircraft true airspeed on the run-in (kt)
   let glideRatio = 3;        // canopy glide ratio (fwd:down), drives the wind-drift model
   let planesMap = {};       // planeId → { registration, planeName, maxWeightInLbs, capacity }
   let aircraftLive = {};    // registration → { alt_baro, gs, baro_rate, lat, lon, on_ground, seen }
@@ -2709,6 +2760,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       if (dz !== currentDz()) return;               // dropzone switched mid-request
       weather = wx;
       scheduleTrackRender();
+      scheduleLp3d();
       renderWeather();
       renderLanding();
     } catch (e) {
@@ -2771,9 +2823,41 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       bbox + '&bboxSR=3857&imageSR=3857&size=280,280&format=png&f=image';
   }
 
+  // Landing pattern geometry in metres, shared by the flat overlay and the 3D
+  // view. Flight-1 style drift model: in still air a leg that loses 300 ft covers
+  // glide * 300 ft over the ground; the wind then stretches the downwind leg and
+  // shortens the final, so the whole pattern shifts relative to the target.
+  function landingGeom() {
+    if (!weather || !weather.current || weather.current.wind_direction_10m == null) return null;
+    var windFrom = weather.current.wind_direction_10m;
+    var spd = Math.round((weather.current.wind_speed_10m || 0) * 1.15078); // mph
+    var ll = getLandingCoords();
+    var pxPerM = 280 / (2 * LP_HALF * Math.cos(ll.lat * Math.PI / 180));
+    var GR = Math.max(1, glideRatio);
+    var Vd = 1000 / 60 * 0.3048;         // descent rate (m/s) ~1000 fpm assumed
+    var legAltM = 300 * 0.3048;          // 300 ft per leg (m)
+    var stillAirM = GR * legAltM;        // still-air horizontal distance per leg
+    var driftM = spd * 0.447 * (legAltM / Vd);   // downwind drift per leg
+    // Leg lengths are kept within what the 280 px sidebar map can show.
+    var clampM = function(m) { return Math.min(100, Math.max(9, m * pxPerM)) / pxPerM; };
+    return {
+      windFrom: windFrom, spd: spd, landHdg: Math.round(windFrom), pxPerM: pxPerM,
+      side: (landingHand === 'left') ? -1 : 1,
+      finalM: clampM(Math.max(0.15 * stillAirM, stillAirM - driftM)),                    // into wind: short
+      downwindM: clampM(stillAirM + driftM),                                            // with wind: long
+      baseM: clampM(Math.max(0.4 * stillAirM, Math.sqrt(Math.max(0, stillAirM * stillAirM - driftM * driftM))))
+    };
+  }
+
   function renderLanding() {
     var host = document.getElementById('wxLanding');
     if (!host) return;
+    var runInMode = lpMode === 'runin';
+    document.getElementById('lpTitle').textContent = runInMode ? 'Run-in' : 'Landing Pattern';
+    document.getElementById('lpLandingControls').style.display = runInMode ? 'none' : '';
+    document.getElementById('lpRunInControls').style.display = runInMode ? '' : 'none';
+    document.getElementById('lp3dBtn').style.display = runInMode ? 'none' : '';
+    document.getElementById('riInfo').style.display = runInMode ? '' : 'none';
     if (!weather || !weather.current || weather.current.wind_direction_10m == null) {
       host.innerHTML = '<div class="wx-muted">No wind data</div>';
       return;
@@ -2787,35 +2871,22 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     var img = document.getElementById('lpMapImg');
     var src = satUrl();
     if (img.getAttribute('data-src') !== src) { img.src = src; img.setAttribute('data-src', src); }
+    document.getElementById('lpNote').textContent = currentDz().approx
+      ? 'Map centred on the ' + currentDz().name + ' airfield, not a surveyed landing area' : '';
+    if (runInMode) { renderRunIn(); return; }
 
-    var windFrom = weather.current.wind_direction_10m;
-    var spd = Math.round((weather.current.wind_speed_10m || 0) * 1.15078); // mph
-    var landHdg = Math.round(windFrom);                                    // land into wind
+    var geom = landingGeom();
+    var windFrom = geom.windFrom, spd = geom.spd;
+    var landHdg = geom.landHdg;                                            // land into wind
     var cx = 140, cy = 140;
     var vec = function(b) { var r = b * Math.PI / 180; return [Math.sin(r), -Math.cos(r)]; };
     var F = vec(landHdg), P = vec(landHdg + 90);
-    var side = (landingHand === 'left') ? -1 : 1;
+    var side = geom.side;
     var pt = function(fwd, sd) {
       return [(cx + F[0] * fwd + P[0] * sd * side).toFixed(1), (cy + F[1] * fwd + P[1] * sd * side).toFixed(1)];
     };
 
-    // Flight-1 style drift model. In still air a leg that loses 300 ft covers
-    // glide * 300 ft horizontally. Wind then drifts the canopy over the ground
-    // during that leg, so the downwind leg stretches (tailwind) and the final
-    // shortens (headwind) — the whole pattern shifting relative to the target.
-    var ll = getLandingCoords();
-    var pxPerM = 280 / (2 * LP_HALF * Math.cos(ll.lat * Math.PI / 180));
-    var GR = Math.max(1, glideRatio);
-    var Vd = 1000 / 60 * 0.3048;         // descent rate (m/s) ~1000 fpm assumed
-    var Vw = spd * 0.447;                // ground wind (m/s)
-    var legAltM = 300 * 0.3048;          // 300 ft per leg (m)
-    var legT = legAltM / Vd;             // seconds per leg
-    var stillAirM = GR * legAltM;        // still-air horizontal distance per leg
-    var driftM = Vw * legT;              // downwind drift per leg
-    var clampPx = function(m) { return Math.min(100, Math.max(9, m * pxPerM)); };
-    var finalPx = clampPx(Math.max(0.15 * stillAirM, stillAirM - driftM));       // into wind → short
-    var downwindPx = clampPx(stillAirM + driftM);                                // with wind → long
-    var basePx = clampPx(Math.max(0.4 * stillAirM, Math.sqrt(Math.max(0, stillAirM * stillAirM - driftM * driftM))));
+    var finalPx = geom.finalM * geom.pxPerM, downwindPx = geom.downwindM * geom.pxPerM, basePx = geom.baseM * geom.pxPerM;
 
     var T = [cx, cy];
     var f1 = pt(-finalPx, 0);                      // start of final (300 ft)
@@ -2841,10 +2912,83 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       '<circle cx="140" cy="140" r="5" class="lp-target"/>' +
       '<line x1="' + wTail[0] + '" y1="' + wTail[1] + '" x2="' + wHead[0] + '" y2="' + wHead[1] + '" class="lp-wind" marker-end="url(#lpWind)"/>';
     document.getElementById('lpSvg').innerHTML = svg;
-    document.getElementById('lpNote').textContent = currentDz().approx
-      ? 'Map centred on the ' + currentDz().name + ' airfield, not a surveyed landing area' : '';
     document.getElementById('lpCaption').innerHTML = 'Land into wind &mdash; heading <b>' + pad(landHdg) + '&deg;</b><br>' +
       'Wind from ' + degToCardinal(windFrom) + ' (' + pad(Math.round(windFrom)) + '&deg;) at ' + spd + ' mph';
+  }
+
+  // --- Run-in (jump run) ---
+  // Shares its heading with the Tracking Plan: auto = into the wind at exit
+  // height, or set by hand to whatever the CI has called for the day.
+  // Separation is time = distance / ground speed, for the commonly taught 300 m
+  // between small groups and 500 m between larger ones. British Skydiving
+  // publishes no figures of its own, so the DZ's own brief always wins.
+  var RI_SEP_SMALL_M = 300, RI_SEP_LARGE_M = 500, RI_MIN_SECS = 5;
+  function runInInfo() {
+    var plan = trackPlan(), w = plan.wExit;
+    var tas = riTas, head = 0, cross = 0;
+    if (w) {
+      var rel = (w.dir - plan.runIn) * Math.PI / 180;
+      head = w.kt * Math.cos(rel);             // + = headwind on the run-in
+      cross = w.kt * Math.sin(rel);            // + = from the right
+    }
+    var gs = tas - head;
+    var secs = function(m) { return gs > 5 ? Math.max(RI_MIN_SECS, Math.ceil(m / (gs * 0.5144))) : null; };
+    return { plan: plan, wind: w, tas: tas, head: head, cross: cross, gs: gs, small: secs(RI_SEP_SMALL_M), large: secs(RI_SEP_LARGE_M) };
+  }
+
+  function renderRunIn() {
+    var info = runInInfo(), plan = info.plan;
+    var $hdg = document.getElementById('riHeading');
+    if (document.activeElement !== $hdg) $hdg.value = plan.runIn;
+    $hdg.disabled = plan.isAuto;
+    document.getElementById('riAuto').checked = plan.isAuto;
+    var $tas = document.getElementById('riTas');
+    if (document.activeElement !== $tas) $tas.value = riTas;
+
+    var cx = 140, cy = 140;
+    var vec = function(b) { var r = b * Math.PI / 180; return [Math.sin(r), -Math.cos(r)]; };
+    var f = vec(plan.runIn), geomPx = 280 / (2 * LP_HALF * Math.cos(getLandingCoords().lat * Math.PI / 180));
+    var a = [cx - f[0] * 200, cy - f[1] * 200], b = [cx + f[0] * 118, cy + f[1] * 118];
+    var svg = '<defs>' +
+        '<marker id="riArrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="ri-head"/></marker>' +
+        '<marker id="riUpper" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="ri-upperhead"/></marker>' +
+      '</defs>' +
+      '<text x="12" y="22" class="lp-n">N&#8593;</text>' +
+      '<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) + '" y2="' + b[1].toFixed(1) + '" class="ri-line" marker-end="url(#riArrow)"/>';
+    // A dot every small-group separation along the run-in, to show the spacing on the ground.
+    for (var n = -3; n <= 3; n++) {
+      var d = n * RI_SEP_SMALL_M * geomPx;
+      if (Math.abs(d) > 112) continue;
+      svg += '<circle class="ri-tick" cx="' + (cx + f[0] * d).toFixed(1) + '" cy="' + (cy + f[1] * d).toFixed(1) + '" r="3.5"/>';
+    }
+    svg += '<circle cx="140" cy="140" r="5" class="lp-target"/>';
+    if (info.wind) {
+      // Set off to one side so it doesn't sit on top of an into-wind run-in line.
+      var wf = vec(info.wind.dir), wo = vec(info.wind.dir + 90), ox = cx + wo[0] * 26, oy = cy + wo[1] * 26;
+      svg += '<line x1="' + (ox + wf[0] * 120).toFixed(1) + '" y1="' + (oy + wf[1] * 120).toFixed(1) + '" x2="' + (ox + wf[0] * 88).toFixed(1) + '" y2="' + (oy + wf[1] * 88).toFixed(1) + '" class="ri-upper" marker-end="url(#riUpper)"/>';
+    }
+    document.getElementById('lpSvg').innerHTML = svg;
+    document.getElementById('lpCaption').innerHTML = 'Run-in heading <b>' + pad3(plan.runIn) + '&deg; ' + degToCardinal(plan.runIn) + '</b>' +
+      (plan.isAuto ? ' (auto)' : ' (set by hand)') + '<br>Yellow dots are ' + RI_SEP_SMALL_M + ' m apart &middot; white arrow = upper wind';
+
+    var row = function(l, v) { return '<div class="wx-row"><span class="wx-lbl">' + l + '</span><span class="wx-val">' + v + '</span></div>'; };
+    var html = '';
+    if (!info.wind) {
+      html = '<div class="wx-muted">No upper wind data yet</div>';
+    } else {
+      html += row('Wind at ' + plan.exitAlt.toLocaleString() + ' ft', pad3(info.wind.dir) + '&deg; &middot; ' + Math.round(info.wind.kt) + ' kt');
+      html += row(info.head >= 0 ? 'Headwind on run-in' : 'Tailwind on run-in', Math.abs(Math.round(info.head)) + ' kt' +
+        (Math.abs(info.cross) >= 3 ? ' <span class="wx-muted">+ ' + Math.abs(Math.round(info.cross)) + ' kt from the ' + (info.cross > 0 ? 'right' : 'left') + '</span>' : ''));
+      html += row('Ground speed', (info.gs > 0 ? Math.round(info.gs) : 0) + ' kt <span class="wx-muted">at ' + info.tas + ' kt TAS</span>');
+      html += '<div class="wx-aloft-title">Time between groups</div>' +
+        '<div class="ri-sep"><div><b>' + (info.small != null ? info.small + ' s' : '&mdash;') + '</b><span>Solos / small groups<br>' + RI_SEP_SMALL_M + ' m</span></div>' +
+        '<div><b>' + (info.large != null ? info.large + ' s' : '&mdash;') + '</b><span>Groups of 4 or more<br>' + RI_SEP_LARGE_M + ' m</span></div></div>';
+      if (info.gs < 45) {
+        html += '<div class="ri-warn">Ground speed is ' + (info.gs < 25 ? 'very ' : '') + 'low in these upper winds. Timed gaps get long and unreliable: expect the CI or pilot to call a crosswind run-in or extra passes.</div>';
+      }
+    }
+    html += '<div class="lp-note" style="text-align:left;">Gap = distance &divide; ground speed, never under ' + RI_MIN_SECS + ' s. These are the commonly taught distances, not a British Skydiving figure: their manuals set no numbers, so the CI and jumpmaster brief on the day is what counts.</div>';
+    document.getElementById('riInfo').innerHTML = html;
   }
 
   // --- Polling ---
@@ -2957,7 +3101,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     lastUpdateTime = null;
     fetchFailed = false;
     weather = null;
-    trackRunIn = null;
+    trackRunIn = loadManualRunIn();
     scheduleTrackRender();
     if (selectedDate !== null) {
       selectedDate = null;
@@ -3113,6 +3257,36 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     });
   });
 
+  // --- Sidebar map mode: landing pattern or run-in ---
+  (function() {
+    var apply = function() {
+      document.querySelectorAll('.lp-mode-btn').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-mode') === lpMode); });
+    };
+    document.querySelectorAll('.lp-mode-btn').forEach(function(b) {
+      b.addEventListener('click', function() {
+        lpMode = b.getAttribute('data-mode');
+        try { localStorage.setItem('hm_lpMode', lpMode); } catch (e) {}
+        apply();
+        renderLanding();
+      });
+    });
+    apply();
+    var $hdg = document.getElementById('riHeading'), $auto = document.getElementById('riAuto'), $tas = document.getElementById('riTas');
+    $auto.addEventListener('change', function() { setManualRunIn($auto.checked ? null : trackPlan().runIn); });
+    $hdg.addEventListener('change', function() {
+      var n = parseFloat($hdg.value);
+      if (!isNaN(n)) setManualRunIn(((Math.round(n) % 360) + 360) % 360);
+    });
+    $tas.addEventListener('change', function() {
+      var n = parseInt($tas.value, 10);
+      if (isNaN(n)) { $tas.value = riTas; return; }
+      riTas = Math.min(180, Math.max(50, n));
+      $tas.value = riTas;
+      try { localStorage.setItem('hm_riTas', String(riTas)); } catch (e) {}
+      renderLanding();
+    });
+  })();
+
   // --- Glide ratio (drives the wind-drift model) ---
   (function() {
     try { var v = parseFloat(localStorage.getItem('hm_glideRatio')); if (!isNaN(v) && v >= 1 && v <= 6) glideRatio = v; } catch (e) {}
@@ -3141,7 +3315,25 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   var TRACK_VFOV = 60;             // view camera: vertical field of view
   var trackCfg = { open: false, side: 'left', exitAlt: 13000, pullAlt: 4500, glide: 1, offsetKm: 0 };
   try { Object.assign(trackCfg, JSON.parse(localStorage.getItem('hm_track') || '{}')); } catch (e) {}
-  var trackRunIn = null;           // manual run-in heading; null = auto. Cleared on dropzone switch.
+  // Manual run-in heading; null = auto. A hand-set value (the CI's call) is kept
+  // per dropzone for the rest of that day only, so a stale one never carries over.
+  function loadManualRunIn() {
+    try {
+      var o = JSON.parse(localStorage.getItem('hm_runIn') || '{}')[currentDz().key];
+      return (o && o.date === todayStr() && typeof o.deg === 'number') ? o.deg : null;
+    } catch (e) { return null; }
+  }
+  function setManualRunIn(deg) {
+    trackRunIn = deg;
+    try {
+      var all = JSON.parse(localStorage.getItem('hm_runIn') || '{}');
+      if (deg == null) delete all[currentDz().key]; else all[currentDz().key] = { deg: deg, date: todayStr() };
+      localStorage.setItem('hm_runIn', JSON.stringify(all));
+    } catch (e) {}
+    scheduleTrackRender();
+    if (lpMode === 'runin') renderLanding();
+  }
+  var trackRunIn = loadManualRunIn();
   var trackTimer = null;
   var trackTex = { near: null, mid: null, far: null };
   // Look-around camera for the view: yaw is relative to the track heading, so
@@ -3318,7 +3510,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 
   // Satellite textures for the view: a sharp one for the near ground and a wide
   // one out to the haze, each with a mip chain so distant ground doesn't sparkle.
-  function loadTrackTex(slot, cx, cy, half, size) {
+  function loadTrackTex(slot, cx, cy, half, size, onReady) {
     var key = currentDz().key + '|' + cx + '|' + cy + '|' + half;
     var cur = trackTex[slot];
     if (cur && cur.key === key) return cur;
@@ -3340,11 +3532,89 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
         }
         tex.levels = levels;
       } catch (e) { tex.failed = true; }
-      scheduleTrackRender();
+      (onReady || scheduleTrackRender)();
     };
-    im.onerror = function() { if (trackTex[slot] === tex) { tex.failed = true; scheduleTrackRender(); } };
+    im.onerror = function() { if (trackTex[slot] === tex) { tex.failed = true; (onReady || scheduleTrackRender)(); } };
     im.src = esriSquareUrl(cx, cy, half, size || 2048);
     return tex;
+  }
+
+  // Paints satellite textures onto a flat ground plane as seen by a pinhole
+  // camera: cam = { x, y (local metres), h (metres above ground), hdg, pitch
+  // (degrees below the horizon), fov (vertical, degrees), near }. `step` > 1 draws
+  // coarse blocks for speed. Returns the projection so overlays can be drawn on top.
+  function paintGround(ctx, W, H, cam, texs, step, haze) {
+    var ex = cam.x, ey = cam.y, h = cam.h;
+    var psi = cam.hdg * Math.PI / 180, phi = cam.pitch * Math.PI / 180;
+    var P = (H / 2) / Math.tan(cam.fov * Math.PI / 360);
+    var Fx = Math.sin(psi) * Math.cos(phi), Fy = Math.cos(psi) * Math.cos(phi), Fz = -Math.sin(phi);
+    var Rx = Math.cos(psi), Ry = -Math.sin(psi);
+    var Ux = Math.sin(psi) * Math.sin(phi), Uy = Math.cos(psi) * Math.sin(phi), Uz = Math.cos(phi);
+
+    var image = ctx.createImageData(W, H), out = image.data;
+    var HZ = [203, 216, 228];                       // distance haze / horizon colour
+    for (var j = 0; j < H; j += step) {
+      var dy = (H / 2 - j - step / 2) / P;
+      for (var i = 0; i < W; i += step) {
+        var dx = (i + step / 2 - W / 2) / P;
+        var wx = Fx + dx * Rx + dy * Ux, wy = Fy + dx * Ry + dy * Uy, wz = Fz + dy * Uz;
+        var r = HZ[0], g = HZ[1], b = HZ[2];
+        if (wz > -0.004) {                          // at or above the horizon: sky
+          var s = Math.min(1, Math.max(0, (wz + 0.004) * 4));
+          r = HZ[0] - s * 95; g = HZ[1] - s * 62; b = HZ[2] - s * 18;
+        } else {
+          var t = h / -wz, gx = ex + t * wx, gy = ey + t * wy;
+          var hd = t * Math.sqrt(wx * wx + wy * wy);
+          var foot = t * Math.sqrt(wx * wx + wy * wy + wz * wz) / P * 1.4 * step;
+          for (var k = 0; k < texs.length; k++) {
+            var tx = texs[k], u = (gx - tx.cx) / (2 * tx.half) + 0.5, v = 0.5 - (gy - tx.cy) / (2 * tx.half);
+            if (u < 0.002 || u > 0.998 || v < 0.002 || v > 0.998) continue;
+            var lv = Math.round(Math.log(foot / (2 * tx.half / tx.levels[0].size)) / Math.LN2);
+            lv = lv < 0 ? 0 : lv >= tx.levels.length ? tx.levels.length - 1 : lv;
+            var L = tx.levels[lv], n = L.size, d = L.data;
+            var fu = u * n - 0.5, fv = v * n - 0.5;
+            var x0 = fu < 0 ? 0 : Math.floor(fu), y0 = fv < 0 ? 0 : Math.floor(fv);
+            var x1 = x0 + 1 < n ? x0 + 1 : x0, y1 = y0 + 1 < n ? y0 + 1 : y0;
+            var ax = fu - x0, ay = fv - y0; if (ax < 0) ax = 0; if (ay < 0) ay = 0;
+            var i00 = (y0 * n + x0) * 4, i10 = (y0 * n + x1) * 4, i01 = (y1 * n + x0) * 4, i11 = (y1 * n + x1) * 4;
+            var w00 = (1 - ax) * (1 - ay), w10 = ax * (1 - ay), w01 = (1 - ax) * ay, w11 = ax * ay;
+            r = d[i00] * w00 + d[i10] * w10 + d[i01] * w01 + d[i11] * w11;
+            g = d[i00 + 1] * w00 + d[i10 + 1] * w10 + d[i01 + 1] * w01 + d[i11 + 1] * w11;
+            b = d[i00 + 2] * w00 + d[i10 + 2] * w10 + d[i01 + 2] * w01 + d[i11 + 2] * w11;
+            break;
+          }
+          r = r * 1.14 + 5; g = g * 1.14 + 5; b = b * 1.14 + 5;   // Esri's mosaic is dark at this scale
+          var hz = hd / haze.base + (hd > haze.start ? (hd - haze.start) / haze.range : 0);
+          if (hz > 1) hz = 1;
+          r += (HZ[0] - r) * hz; g += (HZ[1] - g) * hz; b += (HZ[2] - b) * hz;
+        }
+        for (var bj = j; bj < j + step && bj < H; bj++) {
+          var o = (bj * W + i) * 4;
+          for (var bi = i; bi < i + step && bi < W; bi++, o += 4) { out[o] = r; out[o + 1] = g; out[o + 2] = b; out[o + 3] = 255; }
+        }
+      }
+    }
+    ctx.putImageData(image, 0, 0);
+
+    var near = cam.near || 5;
+    // World point (z = metres above ground) -> camera space, and camera space -> screen.
+    var toCam = function(x, y, z) {
+      var rx = x - ex, ry = y - ey, rz = (z || 0) - h;
+      return { x: rx * Rx + ry * Ry, y: rx * Ux + ry * Uy + rz * Uz, z: rx * Fx + ry * Fy + rz * Fz };
+    };
+    var toScreen = function(c) { return { x: W / 2 + P * c.x / c.z, y: H / 2 - P * c.y / c.z, zc: c.z }; };
+    return {
+      P: P, phi: phi, psi: psi, near: near, toCam: toCam, toScreen: toScreen,
+      project: function(x, y, z) { var c = toCam(x, y, z); return c.z < near ? null : toScreen(c); },
+      // A 3D line segment clipped to the near plane, as two screen points (or null if behind the camera).
+      segment: function(a, b) {
+        var ca = toCam(a[0], a[1], a[2]), cb = toCam(b[0], b[1], b[2]);
+        if (ca.z < near && cb.z < near) return null;
+        var clip = function(p, q) { var f = (near - p.z) / (q.z - p.z); return { x: p.x + (q.x - p.x) * f, y: p.y + (q.y - p.y) * f, z: near }; };
+        if (ca.z < near) ca = clip(ca, cb); else if (cb.z < near) cb = clip(cb, ca);
+        return [toScreen(ca), toScreen(cb)];
+      }
+    };
   }
 
   function renderTrackView(plan) {
@@ -3379,63 +3649,11 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       return;
     }
 
-    var psi = viewHdg * Math.PI / 180, phi = trackCam.pitch * Math.PI / 180;
-    var P = (H / 2) / Math.tan(trackCam.fov * Math.PI / 360);
-    var Fx = Math.sin(psi) * Math.cos(phi), Fy = Math.cos(psi) * Math.cos(phi), Fz = -Math.sin(phi);
-    var Rx = Math.cos(psi), Ry = -Math.sin(psi);
-    var Ux = Math.sin(psi) * Math.sin(phi), Uy = Math.cos(psi) * Math.sin(phi), Uz = Math.cos(phi);
-
-    var image = ctx.createImageData(W, H), out = image.data;
-    var HZ = [203, 216, 228];                       // distance haze / horizon colour
     var step = trackDragging ? (big ? 4 : 3) : 1;   // coarse blocks while dragging keep it responsive
-    for (var j = 0; j < H; j += step) {
-      var dy = (H / 2 - j - step / 2) / P;
-      for (var i = 0; i < W; i += step) {
-        var dx = (i + step / 2 - W / 2) / P;
-        var wx = Fx + dx * Rx + dy * Ux, wy = Fy + dx * Ry + dy * Uy, wz = Fz + dy * Uz;
-        var r = HZ[0], g = HZ[1], b = HZ[2];
-        if (wz > -0.004) {                          // at or above the horizon: sky
-          var s = Math.min(1, Math.max(0, (wz + 0.004) * 4));
-          r = HZ[0] - s * 95; g = HZ[1] - s * 62; b = HZ[2] - s * 18;
-        } else {
-          var t = h / -wz, gx = ex + t * wx, gy = ey + t * wy;
-          var hd = t * Math.sqrt(wx * wx + wy * wy);
-          var foot = t * Math.sqrt(wx * wx + wy * wy + wz * wz) / P * 1.4 * step;
-          for (var k = 0; k < texs.length; k++) {
-            var tx = texs[k], u = (gx - tx.cx) / (2 * tx.half) + 0.5, v = 0.5 - (gy - tx.cy) / (2 * tx.half);
-            if (u < 0.002 || u > 0.998 || v < 0.002 || v > 0.998) continue;
-            var lv = Math.round(Math.log(foot / (2 * tx.half / tx.levels[0].size)) / Math.LN2);
-            lv = lv < 0 ? 0 : lv >= tx.levels.length ? tx.levels.length - 1 : lv;
-            var L = tx.levels[lv], n = L.size, d = L.data;
-            var fu = u * n - 0.5, fv = v * n - 0.5;
-            var x0 = fu < 0 ? 0 : Math.floor(fu), y0 = fv < 0 ? 0 : Math.floor(fv);
-            var x1 = x0 + 1 < n ? x0 + 1 : x0, y1 = y0 + 1 < n ? y0 + 1 : y0;
-            var ax = fu - x0, ay = fv - y0; if (ax < 0) ax = 0; if (ay < 0) ay = 0;
-            var i00 = (y0 * n + x0) * 4, i10 = (y0 * n + x1) * 4, i01 = (y1 * n + x0) * 4, i11 = (y1 * n + x1) * 4;
-            var w00 = (1 - ax) * (1 - ay), w10 = ax * (1 - ay), w01 = (1 - ax) * ay, w11 = ax * ay;
-            r = d[i00] * w00 + d[i10] * w10 + d[i01] * w01 + d[i11] * w11;
-            g = d[i00 + 1] * w00 + d[i10 + 1] * w10 + d[i01 + 1] * w01 + d[i11 + 1] * w11;
-            b = d[i00 + 2] * w00 + d[i10 + 2] * w10 + d[i01 + 2] * w01 + d[i11 + 2] * w11;
-            break;
-          }
-          r = r * 1.14 + 5; g = g * 1.14 + 5; b = b * 1.14 + 5;   // Esri's mosaic is dark at this scale
-          var hz = hd / 70000 + (hd > 14000 ? (hd - 14000) / 30000 : 0);
-          if (hz > 1) hz = 1;
-          r += (HZ[0] - r) * hz; g += (HZ[1] - g) * hz; b += (HZ[2] - b) * hz;
-        }
-        for (var bj = j; bj < j + step && bj < H; bj++) {
-          var o = (bj * W + i) * 4;
-          for (var bi = i; bi < i + step && bi < W; bi++, o += 4) { out[o] = r; out[o + 1] = g; out[o + 2] = b; out[o + 3] = 255; }
-        }
-      }
-    }
-    ctx.putImageData(image, 0, 0);
-
-    var project = function(x, y) {
-      var rx = x - ex, ry = y - ey, zc = rx * Fx + ry * Fy - h * Fz;
-      if (zc < 50) return null;
-      return { x: W / 2 + P * (rx * Rx + ry * Ry) / zc, y: H / 2 - P * (rx * Ux + ry * Uy - h * Uz) / zc, zc: zc };
-    };
+    var view = paintGround(ctx, W, H, { x: ex, y: ey, h: h, hdg: viewHdg, pitch: trackCam.pitch, fov: trackCam.fov, near: 50 },
+      texs, step, { base: 70000, start: 14000, range: 30000 });
+    var P = view.P, phi = view.phi;
+    var project = function(x, y) { return view.project(x, y, 0); };
     var halo = function(txt, x, y, font, fill, align) {
       ctx.font = font; ctx.textAlign = align || 'left'; ctx.lineJoin = 'round';
       ctx.lineWidth = 4 * fs; ctx.strokeStyle = 'rgba(15,23,42,0.85)'; ctx.strokeText(txt, x, y);
@@ -3588,6 +3806,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
         el.value = trackCfg[prop];
         saveTrackCfg();
         scheduleTrackRender();
+        if (lpMode === 'runin') renderLanding();
       });
     };
     bindNum('trackExitAlt', 'exitAlt', 3000, 25000);
@@ -3596,14 +3815,13 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     bindNum('trackOffset', 'offsetKm', -5, 5);
     var $run = document.getElementById('trackRunIn'), $auto = document.getElementById('trackRunInAuto');
     $auto.addEventListener('change', function() {
-      trackRunIn = $auto.checked ? null : trackPlan().runIn;
+      setManualRunIn($auto.checked ? null : trackPlan().runIn);
       renderTrack();
     });
     $run.addEventListener('change', function() {
       var n = parseFloat($run.value);
       if (isNaN(n)) return;
-      trackRunIn = ((Math.round(n) % 360) + 360) % 360;
-      scheduleTrackRender();
+      setManualRunIn(((Math.round(n) % 360) + 360) % 360);
     });
     // Look around: drag to turn and tilt, wheel or pinch to zoom. While moving,
     // the view draws in coarse blocks; it sharpens shortly after you stop.
@@ -3683,6 +3901,203 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     });
     applyOpen();
     window.addEventListener('resize', scheduleTrackRender);
+  })();
+
+  // --- 3D landing pattern ---
+  // The sidebar's landing pattern drawn in 3D over the same satellite ground:
+  // the legs step down 900 / 600 / 300 ft to the target, with a pole under each
+  // turn point and the path's shadow on the ground. The camera orbits a point in
+  // the middle of the pattern: drag to swing round and tilt, wheel/pinch to move in.
+  var lp3dCam = { yaw: 0, pitch: 24, dist: 900, forKey: null };
+  var lp3dDragging = false, lp3dTimer = null;
+
+  function lp3dOpen() { return document.getElementById('lp3d').classList.contains('open'); }
+  function scheduleLp3d() {
+    if (lp3dTimer) clearTimeout(lp3dTimer);
+    lp3dTimer = setTimeout(function() { lp3dTimer = null; renderLanding3D(); }, 60);
+  }
+
+  function renderLanding3D() {
+    if (!lp3dOpen()) return;
+    var cv = document.getElementById('lp3dCanvas'), ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+    var cssW = cv.getBoundingClientRect().width || W;
+    var fs = Math.min(2.3, Math.max(1, W * 0.75 / cssW));
+    var px = function(n) { return Math.round(n * fs) + 'px'; };
+    var message = function(txt) {
+      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#94a3b8'; ctx.font = '600 ' + px(24) + ' "Barlow Condensed", sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(txt, W / 2, H / 2);
+    };
+    var g = landingGeom();
+    if (!g) { message('No wind data yet'); return; }
+
+    // Pattern corners in local metres (x east, y north, z up). The landing point is the origin.
+    var F = bearingVec(g.landHdg), S = bearingVec(g.landHdg + 90 * g.side), FT = 0.3048;
+    var at = function(fwd, sd, z) { return [F.x * fwd + S.x * sd, F.y * fwd + S.y * sd, z]; };
+    var T = at(0, 0, 0), f1 = at(-g.finalM, 0, 300 * FT), b1 = at(-g.finalM, g.baseM, 600 * FT), d1 = at(-g.finalM + g.downwindM, g.baseM, 900 * FT);
+    var focus = [(T[0] + f1[0] + b1[0] + d1[0]) / 4, (T[1] + f1[1] + b1[1] + d1[1]) / 4, 70];
+    var extent = Math.max(g.finalM, g.downwindM, g.baseM);
+
+    // Starting view: a three-quarter view from the far side of the circuit, so the
+    // final runs across and away from you with the base and downwind legs behind it.
+    var key = currentDz().key + '|' + g.landHdg + '|' + g.side + '|' + Math.round(extent);
+    if (lp3dCam.forKey !== key) {
+      lp3dCam.forKey = key;
+      lp3dCam.yaw = (g.landHdg + 58 * g.side + 360) % 360;
+      lp3dCam.pitch = 22;
+      lp3dCam.dist = Math.max(650, extent * 2.6);
+    }
+    var pr = lp3dCam.pitch * Math.PI / 180, look = bearingVec(lp3dCam.yaw);
+    var cam = {
+      x: focus[0] - look.x * lp3dCam.dist * Math.cos(pr), y: focus[1] - look.y * lp3dCam.dist * Math.cos(pr),
+      h: Math.max(8, focus[2] + lp3dCam.dist * Math.sin(pr)), hdg: lp3dCam.yaw, pitch: lp3dCam.pitch, fov: 50, near: 3
+    };
+
+    var tex = [
+      loadTrackTex('lpA', 0, 0, 350, 1536, scheduleLp3d),
+      loadTrackTex('lpB', 0, 0, 1500, 1536, scheduleLp3d),
+      loadTrackTex('lpC', 0, 0, 6000, 1536, scheduleLp3d),
+      loadTrackTex('lpD', 0, 0, 40000, 1024, scheduleLp3d)
+    ];
+    var ready = tex.filter(function(t) { return t.levels; });
+    if (!ready.length) { message(tex.some(function(t) { return t.failed; }) ? 'Satellite imagery unavailable' : 'Loading satellite imagery…'); return; }
+
+    var view = paintGround(ctx, W, H, cam, ready, lp3dDragging ? 4 : 1, { base: 40000, start: 5000, range: 25000 });
+    var halo = function(txt, x, y, font, fill, align) {
+      ctx.font = font; ctx.textAlign = align || 'left'; ctx.lineJoin = 'round';
+      ctx.lineWidth = 4 * fs; ctx.strokeStyle = 'rgba(15,23,42,0.85)'; ctx.strokeText(txt, x, y);
+      ctx.fillStyle = fill; ctx.fillText(txt, x, y);
+    };
+    var line = function(a, b, colour, width, dash) {
+      var sg = view.segment(a, b);
+      if (!sg) return null;
+      ctx.beginPath(); ctx.moveTo(sg[0].x, sg[0].y); ctx.lineTo(sg[1].x, sg[1].y);
+      ctx.setLineDash(dash ? [dash * fs, dash * 0.8 * fs] : []); ctx.lineWidth = width * fs; ctx.lineCap = 'round';
+      ctx.strokeStyle = colour; ctx.stroke(); ctx.setLineDash([]);
+      return sg;
+    };
+    var arrow = function(sg, colour) {            // head at the end of a drawn screen segment
+      if (!sg) return;
+      var dx = sg[1].x - sg[0].x, dy = sg[1].y - sg[0].y, len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 12) return;
+      dx /= len; dy /= len;
+      var sz = 13 * fs, ex2 = sg[1].x, ey2 = sg[1].y;
+      ctx.beginPath(); ctx.moveTo(ex2 + dx * sz * 0.4, ey2 + dy * sz * 0.4);
+      ctx.lineTo(ex2 - dx * sz - dy * sz * 0.6, ey2 - dy * sz + dx * sz * 0.6);
+      ctx.lineTo(ex2 - dx * sz + dy * sz * 0.6, ey2 - dy * sz - dx * sz * 0.6);
+      ctx.closePath(); ctx.fillStyle = colour; ctx.fill();
+    };
+    var ground = function(p) { return [p[0], p[1], 0]; };
+
+    // Shadow of the path on the ground, then a pole under each turn point.
+    [[d1, b1], [b1, f1], [f1, T]].forEach(function(sg) { line(ground(sg[0]), ground(sg[1]), 'rgba(2,6,23,0.55)', 5); });
+    [d1, b1, f1].forEach(function(p) { line(ground(p), p, 'rgba(255,255,255,0.8)', 2); });
+
+    // Target ring on the ground (15 m radius).
+    ctx.beginPath();
+    var started = false;
+    for (var a = 0; a <= 360; a += 12) {
+      var rp = view.project(Math.sin(a * Math.PI / 180) * 15, Math.cos(a * Math.PI / 180) * 15, 0);
+      if (!rp) { started = false; continue; }
+      if (started) ctx.lineTo(rp.x, rp.y); else { ctx.moveTo(rp.x, rp.y); started = true; }
+    }
+    ctx.lineWidth = 3 * fs; ctx.strokeStyle = '#ef4444'; ctx.stroke();
+
+    // The legs themselves: downwind and base dashed white, final solid green (as in the flat map).
+    arrow(line(d1, b1, '#ffffff', 4, 12), '#ffffff');
+    arrow(line(b1, f1, '#ffffff', 4, 12), '#ffffff');
+    arrow(line(f1, T, '#22c55e', 5), '#22c55e');
+
+    var barH = (fs > 1.3 ? 66 : 40) * fs;          // keep labels out from under the caption bar
+    [[d1, '900 ft · downwind'], [b1, '600 ft · base'], [f1, '300 ft · final']].forEach(function(it) {
+      var sp = view.project(it[0][0], it[0][1], it[0][2]);
+      if (sp && sp.x > 0 && sp.x < W && sp.y > barH + 24 * fs && sp.y < H) halo(it[1], sp.x + 10 * fs, sp.y - 10 * fs, '700 ' + px(20) + ' "Barlow Condensed", sans-serif', 'white');
+    });
+    var tp = view.project(0, 0, 0);
+    if (tp && tp.x > 0 && tp.x < W && tp.y > barH && tp.y < H - 30 * fs) halo('TARGET', tp.x, tp.y + 30 * fs, '700 ' + px(18) + ' "Barlow Condensed", sans-serif', '#fecaca', 'center');
+
+    // Ground wind arrow beside the target, pointing the way the wind blows.
+    var wv = bearingVec(g.windFrom), off = [S.x * -80 + F.x * 90, S.y * -80 + F.y * 90];   // upwind of the target, clear of the final
+    var wa = [off[0] + wv.x * 45, off[1] + wv.y * 45, 0], wb = [off[0] - wv.x * 45, off[1] - wv.y * 45, 0];
+    arrow(line(wa, wb, '#38bdf8', 5), '#38bdf8');
+    var wl = view.project(wa[0], wa[1], 0);
+    if (wl && wl.x > 0 && wl.x < W && wl.y > barH + 20 * fs && wl.y < H) halo('WIND ' + g.spd + ' mph', wl.x + 8 * fs, wl.y - 8 * fs, '700 ' + px(16) + ' "Barlow Condensed", sans-serif', '#bae6fd');
+
+    // Caption bar (two lines when the text has been scaled up for a small screen).
+    var cap1 = currentDz().name.toUpperCase() + '  ·  ' + (g.side < 0 ? 'LEFT' : 'RIGHT') + '-HAND PATTERN';
+    var cap2 = 'LAND ' + pad3(g.landHdg) + '°  ·  WIND FROM ' + degToCardinal(g.windFrom) + ' ' + g.spd + ' MPH';
+    var twoLine = fs > 1.3;
+    ctx.fillStyle = 'rgba(15,23,42,0.72)'; ctx.fillRect(0, 0, W, (twoLine ? 66 : 40) * fs);
+    ctx.font = '700 ' + px(20) + ' "Barlow Condensed", sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = 'white';
+    if (twoLine) { ctx.fillText(cap1, 14 * fs, 27 * fs); ctx.fillText(cap2, 14 * fs, 54 * fs); }
+    else ctx.fillText(cap1 + '  ·  ' + cap2, 14 * fs, 27 * fs);
+    halo('LOOKING ' + pad3(lp3dCam.yaw) + '°' + (ready.length < tex.length && !tex.some(function(t) { return t.failed; }) ? '  ·  loading sharper imagery…' : ''),
+      W - 12 * fs, H - 26 * fs, '600 ' + px(15) + ' "Barlow Condensed", sans-serif', '#e2e8f0', 'right');
+    ctx.font = px(11) + ' sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.fillText('Imagery © Esri, Maxar, Earthstar Geographics', W - 8, H - 8);
+  }
+
+  (function() {
+    var $modal = document.getElementById('lp3d'), $cv = document.getElementById('lp3dCanvas');
+    var pointers = {}, pinch = 0, raf = false, settle = null;
+    var moved = function() {
+      lp3dCam.pitch = Math.min(88, Math.max(4, lp3dCam.pitch));
+      lp3dCam.dist = Math.min(8000, Math.max(120, lp3dCam.dist));
+      lp3dCam.yaw = (lp3dCam.yaw % 360 + 360) % 360;
+      lp3dDragging = true;
+      if (!raf) { raf = true; requestAnimationFrame(function() { raf = false; renderLanding3D(); }); }
+      if (settle) clearTimeout(settle);
+      settle = setTimeout(function() { lp3dDragging = false; renderLanding3D(); }, 220);
+    };
+    var setOpen = function(on) {
+      $modal.classList.toggle('open', on);
+      if (on) { lp3dCam.forKey = null; renderLanding3D(); }
+    };
+    document.getElementById('lp3dBtn').addEventListener('click', function() { setOpen(true); });
+    $cv.addEventListener('pointerdown', function(e) {
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+      try { $cv.setPointerCapture(e.pointerId); } catch (err) {}
+      $cv.classList.add('dragging');
+      var ids = Object.keys(pointers);
+      if (ids.length === 2) pinch = Math.hypot(pointers[ids[0]].x - pointers[ids[1]].x, pointers[ids[0]].y - pointers[ids[1]].y);
+    });
+    $cv.addEventListener('pointermove', function(e) {
+      var prev = pointers[e.pointerId];
+      if (!prev) return;
+      var ids = Object.keys(pointers);
+      if (ids.length === 1) {
+        // Orbit: dragging right swings the scene round to the right, dragging down tips the view overhead.
+        var k = 180 / ($cv.getBoundingClientRect().width || 1280);
+        lp3dCam.yaw -= (e.clientX - prev.x) * k * 1.4;
+        lp3dCam.pitch += (e.clientY - prev.y) * k * 1.1;
+        moved();
+      }
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (ids.length === 2) {
+        var d = Math.hypot(pointers[ids[0]].x - pointers[ids[1]].x, pointers[ids[0]].y - pointers[ids[1]].y);
+        if (pinch > 0 && d > 0) { lp3dCam.dist *= pinch / d; moved(); }
+        pinch = d;
+      }
+    });
+    var release = function(e) { delete pointers[e.pointerId]; pinch = 0; if (!Object.keys(pointers).length) $cv.classList.remove('dragging'); };
+    $cv.addEventListener('pointerup', release);
+    $cv.addEventListener('pointercancel', release);
+    $cv.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      lp3dCam.dist *= Math.exp(Math.max(-60, Math.min(60, e.deltaY)) * 0.004);
+      moved();
+    }, { passive: false });
+    $cv.addEventListener('dblclick', function() { lp3dCam.forKey = null; moved(); });
+    $modal.querySelectorAll('.track-tools button').forEach(function(b) {
+      b.addEventListener('click', function() {
+        var tool = b.getAttribute('data-tool');
+        if (tool === 'close') { setOpen(false); return; }
+        if (tool === 'reset') lp3dCam.forKey = null; else lp3dCam.dist *= tool === 'in' ? 0.7 : 1 / 0.7;
+        moved();
+      });
+    });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && lp3dOpen()) setOpen(false); });
+    window.addEventListener('resize', function() { if (lp3dOpen()) scheduleLp3d(); });
   })();
 
   // --- Init ---

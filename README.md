@@ -73,6 +73,15 @@ The **Track Plan** button in the filter bar opens a planner for tracking jumps, 
 
 Landmark names are baked into `DZ_PLACES` in `index.html` (from OpenStreetMap, ODbL) so the planner has no live lookup to fail. When adding a dropzone, add its towns and villages there too, as `[name, lat, lon, rank]` with rank 2 = city, 1 = town, 0 = village.
 
+## Landing pattern, 3D view and run-in
+
+The sidebar map under the weather has a **Landing pattern / Run-in** selector.
+
+- **Landing pattern** is the 900 / 600 / 300 ft circuit on the satellite map, as before. The **3D view of the pattern** button opens the same circuit drawn in 3D over the satellite ground, with a pole under each turn point and the path's shadow on the ground. Drag to orbit and tilt, scroll or pinch (or + and -) to move in and out, double-click or Reset for the starting view, Esc or Close to leave.
+- **Run-in** shows the jump run over the DZ instead. The heading is the same one the Tracking Plan uses: auto is into the wind at exit height, or untick Auto and enter the heading the CI has set. A hand-set heading is remembered for that dropzone for the rest of the day only. Below the map it lists the wind at exit height, the head/tailwind on the run-in, the ground speed for the aircraft TAS you enter (default 90 kt), and the time to leave between groups.
+
+Time between groups = distance / ground speed, rounded up, never under 5 s, for the commonly taught 300 m between solos and small groups and 500 m between groups of four or more. British Skydiving's Operations Manual, Jump Pilots Manual and Tracking Progression Manual set no separation figures, so these are not a British Skydiving standard: the CI and jumpmaster brief is what counts. The constants are `RI_SEP_SMALL_M`, `RI_SEP_LARGE_M` and `RI_MIN_SECS` in `index.html` if a DZ uses different numbers.
+
 ## Data Schema
 
 ### Manifest
