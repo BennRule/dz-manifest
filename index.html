@@ -4211,7 +4211,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     var dz = currentDz();
     var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + dz.lat + '&longitude=' + dz.lon +
       '&hourly=cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_gusts_10m,wind_direction_10m,' +
-      'precipitation,precipitation_probability,visibility,temperature_2m,dew_point_2m,is_day' +
+      'precipitation,precipitation_probability,visibility,temperature_2m,dew_point_2m,is_day,wind_speed_925hPa,wind_speed_700hPa' +
       '&wind_speed_unit=kn&forecast_days=16&timezone=auto';   // 16 days is as far as the forecast goes
     try {
       var r = await fetch(url);
@@ -4235,19 +4235,33 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     var vis = h.visibility[i], t = h.temperature_2m[i], td = h.dew_point_2m[i];
     var baseFt = (t != null && td != null) ? Math.max(0, Math.round((t - td) * 400 / 100) * 100) : null;   // spread x 400 ft
 
+    var w2k = (h.wind_speed_925hPa || [])[i], w10k = (h.wind_speed_700hPa || [])[i];   // ~2,500 ft and ~10,000 ft; null far out
+
     var effWind = wind + JF_GUST_WEIGHT * (gust - wind);
     var pWind = jfLogistic((limit - effWind) / 2.5);
+    // Winds aloft. British Skydiving sets no figure for these, but they are what
+    // most often gets a day called off early: at canopy height a wind over ~30 kt
+    // beats a canopy's forward speed, and uppers near 50 kt make the spot and the
+    // run-in unworkable. Set against 19/09/2026, when Headcorn, Langar and
+    // Netheravon all called it with 30-40 kt at 2,500 ft and 40-55 kt at 10,000 ft,
+    // and the day before, when Headcorn jumped in 15-22 kt and 22-28 kt.
+    var pCanopy = w2k == null ? 1 : jfLogistic((30 - w2k) / 4);
+    var pUpper = w10k == null ? 1 : jfLogistic((48 - w10k) / 5);
     // Low cloud (below ~10,000 ft) needs gaps to see the ground. Scattered to broken
     // cumulus (up to ~60%) is routinely jumped through the gaps; it is solid cover
     // that stops play. Mid-level cloud may only cap the altitude.
     var pLow = low <= 40 ? 1 : low <= 70 ? 1 - (low - 40) / 30 * 0.35 : low <= 90 ? 0.65 - (low - 70) / 20 * 0.45 : 0.2 - (low - 90) / 10 * 0.15;
     var pMid = mid <= 50 ? 1 : 1 - (mid - 50) / 50 * 0.3;
+    // Broken or solid low cloud with a low base leaves no usable height under it.
+    if (low >= 50 && baseFt != null && baseFt < 3500) pLow *= 0.4 + 0.6 * baseFt / 3500;
     var pRain = rain >= 1 ? 0.05 : rain >= 0.1 ? 0.35 : 1 - 0.3 * rainProb / 100;
     var pVis = vis == null ? 1 : vis < 5000 ? 0.05 : vis < 8000 ? 0.6 : 1;
-    var p = pWind * pLow * pMid * pRain * pVis;
+    var p = pWind * pCanopy * pUpper * pLow * pMid * pRain * pVis;
 
     var factors = [
       [pWind, gust > limit ? 'Gusts ' + Math.round(gust) + ' kt, over the ' + limit + ' kt limit' : 'Wind ' + Math.round(wind) + ' gusting ' + Math.round(gust) + ' kt, close to the ' + limit + ' kt limit'],
+      [pCanopy, 'Wind at canopy height ' + Math.round(w2k || 0) + ' kt at 2,500 ft'],
+      [pUpper, 'Upper winds ' + Math.round(w10k || 0) + ' kt at 10,000 ft'],
       [pLow, 'Low cloud ' + Math.round(low) + '%' + (baseFt != null ? ', base around ' + baseFt.toLocaleString() + ' ft' : '')],
       [pMid, 'Mid-level cloud ' + Math.round(mid) + '% may cap the altitude'],
       [pRain, rain >= 0.1 ? 'Rain ' + rain.toFixed(1) + ' mm/h' : 'Rain risk ' + Math.round(rainProb) + '%'],
@@ -4257,7 +4271,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       i: i, time: h.time[i], hour: parseInt(h.time[i].slice(11, 13), 10), day: h.time[i].slice(0, 10), isDay: h.is_day[i] === 1,
       p: p, limiting: factors[0][0] < 0.8 ? factors[0][1] : null,
       wind: wind, gust: gust, dir: h.wind_direction_10m[i], low: low, mid: mid, high: high, baseFt: baseFt,
-      rain: rain, rainProb: rainProb, vis: vis, pWind: pWind, pLow: pLow, pMid: pMid, pRain: pRain, pVis: pVis
+      rain: rain, rainProb: rainProb, vis: vis, w2k: w2k, w10k: w10k, pCanopy: pCanopy, pUpper: pUpper, pWind: pWind, pLow: pLow, pMid: pMid, pRain: pRain, pVis: pVis
     };
   }
 
@@ -4365,6 +4379,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       rowOf('Wind kt', function(s) { return cell(Math.round(s.wind), tint(s.pWind)); }) +
       rowOf('Gust kt', function(s) { return cell(Math.round(s.gust), s.gust > limit ? 'jf-bad' : tint(s.pWind)); }) +
       rowOf('From', function(s) { return cell('<span class="jf-arrow" style="transform:rotate(' + Math.round(s.dir + 180) + 'deg)" title="' + pad3(s.dir) + '&deg;">&uarr;</span>'); }) +
+      rowOf('2,500 ft kt', function(s) { return cell(s.w2k != null ? Math.round(s.w2k) : '&middot;', tint(s.pCanopy)); }) +
+      rowOf('10,000 ft kt', function(s) { return cell(s.w10k != null ? Math.round(s.w10k) : '&middot;', tint(s.pUpper)); }) +
       rowOf('Low cloud %', function(s) { return cell(Math.round(s.low), tint(s.pLow)); }) +
       rowOf('Mid cloud %', function(s) { return cell(Math.round(s.mid), tint(s.pMid)); }) +
       rowOf('High cloud %', function(s) { return cell(Math.round(s.high)); }) +
@@ -4387,7 +4403,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     $call.innerHTML = head;
     document.getElementById('jfNote').innerHTML = 'Scored against British Skydiving limits for ' +
       (jfCfg.cat === 'student' ? 'AFF and category students (15 kt)' : '&lsquo;A&rsquo; licence and above and tandems (20 kt)') +
-      ': ground wind and gusts, ground visible from the exit point (low cloud), 5 km visibility, and rain. Cloud base is estimated from the temperature and dew point spread. ' +
+      ': ground wind and gusts, ground visible from the exit point (low cloud), 5 km visibility, and rain. Winds at 2,500 ft and 10,000 ft are scored too: British Skydiving sets no limit for them, but over about 30 kt at canopy height or 50 kt at altitude is what usually gets a day called off. Cloud base is estimated from the temperature and dew point spread. ' +
       'Low cloud is below about 10,000 ft, mid 10,000 to 26,000 ft. Beyond about a week the forecast is only a rough trend. A forecast guide only: the CI makes the call on the day. Forecast: Open-Meteo.';
   }
 
