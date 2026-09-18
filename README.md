@@ -62,6 +62,18 @@ The Burble feed is thinner than GoSkydive: current and upcoming loads only (no l
 
 Add a row to the `DROPZONES` array near the top of the script in `index.html`: `key` (`burble:<dz_id>` or the GoSkydive id), `provider`, `name`, and the `lat`/`lon` of the landing area. The weather panel and the landing-pattern satellite map both centre on that point. Headcorn, Langar, Netheravon, Beccles and Skydive Spain are pinpointed landing areas; the others use the airfield reference point and are flagged `approx: true`, which shows a note under the map.
 
+## Jump forecast
+
+The **Jump Forecast** button opens an hour-by-hour call on whether jumping is likely at the selected dropzone, and the sidebar weather shows a one-line version ("Jumping likely now, 84%"). Data is the Open-Meteo forecast for the dropzone's coordinates: wind, gusts, cloud in low / mid / high layers, rain, visibility, temperature and dew point.
+
+It scores each hour against British Skydiving's limits (Operations Manual, section 8): ground wind 15 kt for AFF and category students, 20 kt for 'A' licence and above and tandem students, with jumping suspended after two gusts over the limit; the ground must be visible from the exit point; flight visibility at least 5 km. Wind, low cloud, mid cloud, rain and visibility each give a 0 to 1 chance and the hour's likelihood is their product. 70% and up is Likely, 40 to 70% Marginal, below that Unlikely. A toggle switches between the 20 kt and 15 kt limits.
+
+- Day cards run the full 16 days Open-Meteo offers, each with the mean likelihood over daylight hours 08:00 to 19:00 and the best run of hours at 60% or better. Beyond three days is marked medium confidence, beyond a week low confidence.
+- The hourly table tints the cells that are holding the hour back. Estimated cloud base is the temperature and dew point spread x 400 ft.
+- Calibration lives in `jfScoreHour()` and `JF_GUST_WEIGHT` in `index.html`. Model gusts run above a DZ anemometer, so only 40% of the gust excess counts; that, and treating up to ~60% broken low cloud as jumpable, was set against Headcorn flying lifts all afternoon on 18/09/2026 in forecast 13 kt gusting 25 kt under 40 to 60% cumulus.
+
+It is a planning guide only. The CI makes the call.
+
 ## Tracking plan
 
 The **Track Plan** button in the filter bar opens a planner for tracking jumps, for whichever dropzone is selected. A tracking group leaves the run-in (jump run) at 90 degrees, left or right.

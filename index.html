@@ -910,6 +910,41 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 
 .sidebar-badges { display: flex; gap: 4px; flex-shrink: 0; }
 
+/* Jump forecast */
+.jf-panel { display: none; background: white; border-bottom: 1px solid var(--slate-200); padding: 16px 24px 18px; }
+.jf-panel.open { display: block; }
+.jf-call { font-size: 14px; color: var(--slate-700); line-height: 1.5; margin: 2px 0 12px; }
+.jf-call b { color: var(--slate-900); }
+.jf-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: var(--slate-400); vertical-align: baseline; }
+.jf-dot.good { background: #16a34a; } .jf-dot.marginal { background: #d97706; } .jf-dot.poor { background: #dc2626; }
+.jf-days { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; scroll-snap-type: x proximity; }
+.jf-day { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--slate-200); border-left-width: 5px; background: white; cursor: pointer; font-family: inherit; color: var(--slate-700); flex: 0 0 132px; scroll-snap-align: start; }
+.jf-day.far { opacity: 0.72; }
+.jf-day-conf { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-400); font-family: 'Barlow Condensed', sans-serif; font-weight: 600; }
+.jf-day.good { border-left-color: #16a34a; } .jf-day.marginal { border-left-color: #d97706; } .jf-day.poor { border-left-color: #dc2626; }
+.jf-day.active { background: var(--slate-100); border-top-color: var(--slate-400); border-right-color: var(--slate-400); border-bottom-color: var(--slate-400); }
+.jf-day-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); }
+.jf-day-pct { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; color: var(--slate-900); line-height: 1.1; }
+.jf-day-word { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+.jf-day.good .jf-day-word { color: #15803d; } .jf-day.marginal .jf-day-word { color: #b45309; } .jf-day.poor .jf-day-word { color: #b91c1c; }
+.jf-day-best { font-size: 11px; color: var(--slate-500); }
+.jf-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--slate-200); border-radius: 8px; }
+.jf-table { border-collapse: collapse; width: 100%; font-family: 'DM Mono', monospace; font-size: 12px; }
+.jf-table th, .jf-table td { padding: 5px 6px; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--slate-100); color: var(--slate-700); }
+.jf-table tbody th, .jf-table thead th:first-child { text-align: left; position: sticky; left: 0; background: white; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); z-index: 1; }
+.jf-table thead th { font-weight: 600; color: var(--slate-500); background: var(--slate-50); }
+.jf-table thead th.jf-now { background: var(--slate-800); color: white; }
+.jf-table tr:last-child td, .jf-table tr:last-child th { border-bottom: 0; }
+.jf-night { color: var(--slate-300) !important; }
+.jf-warn { background: #fef3c7; } .jf-bad { background: #fee2e2; color: #991b1b !important; }
+.jf-pct { display: inline-block; min-width: 30px; padding: 2px 4px; border-radius: 4px; color: white; font-weight: 500; }
+.jf-pct.good { background: #16a34a; } .jf-pct.marginal { background: #d97706; } .jf-pct.poor { background: #dc2626; }
+.jf-arrow { display: inline-block; font-size: 14px; line-height: 1; color: var(--slate-600); }
+.jf-summary { font-size: 13px; color: var(--slate-700); background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 6px; padding: 7px 9px; margin: 0 0 10px; cursor: pointer; line-height: 1.4; }
+.jf-summary:hover { background: var(--slate-100); }
+.jf-summary b { color: var(--slate-900); }
+@media (max-width: 900px) { .jf-panel { padding: 14px 16px; } }
+
 /* Tracking plan */
 .track-panel { display: none; background: white; border-bottom: 1px solid var(--slate-200); padding: 16px 24px 18px; }
 .track-panel.open { display: block; }
@@ -1251,6 +1286,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   <span style="width:1px;height:20px;background:var(--slate-200);margin:0 4px;"></span>
   <button class="filter-btn" data-filter="sports">Sports Only</button>
   <span style="width:1px;height:20px;background:var(--slate-200);margin:0 4px;"></span>
+  <button class="filter-btn" id="jfBtn" title="Will we be jumping? Wind and cloud against the limits">&#9925; Jump Forecast</button>
   <button class="filter-btn" id="trackBtn" title="Tracking jump planner">&#10138; Track Plan</button>
   <label class="filter-btn prevdays-label" id="prevDaysBtn">&#128197; Previous Days<input type="date" id="datePicker" class="date-input" aria-label="Pick a date to view"></label>
   <span id="historyLabel" class="history-label"></span>
@@ -1261,6 +1297,18 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 <div class="aircraft-bar" id="aircraftBar">
   <span class="aircraft-bar-label">Aircraft</span>
 </div>
+
+<!-- Jump forecast -->
+<section class="jf-panel" id="jfPanel">
+  <div class="track-head">
+    <span class="track-title">Jump Forecast &middot; <span id="jfDzName"></span></span>
+    <div class="track-seg"><button type="button" data-cat="licensed">Licensed &amp; tandem &middot; 20 kt</button><button type="button" data-cat="student">Students &middot; 15 kt</button></div>
+  </div>
+  <div class="jf-call" id="jfCall"></div>
+  <div class="jf-days" id="jfDays"></div>
+  <div class="jf-scroll" id="jfHours"></div>
+  <div class="track-note" id="jfNote"></div>
+</section>
 
 <!-- Tracking plan -->
 <section class="track-panel" id="trackPanel">
@@ -2758,6 +2806,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   }
 
   async function fetchWeather() {
+    fetchJumpForecast();                            // separate request, same cadence
     var dz = currentDz();
     var lat = dz.lat, lon = dz.lon;
     var fields = [];
@@ -2794,7 +2843,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       ? Math.round(c.wind_direction_10m) + '&deg; ' + degToCardinal(c.wind_direction_10m) + ' &middot; ' + mph(c.wind_speed_10m || 0) + ' mph' +
         (c.wind_gusts_10m ? ' <span class="wx-muted">G' + mph(c.wind_gusts_10m) + '</span>' : '')
       : '&mdash;';
-    var html = '<div class="wx-place">' + esc(currentDz().name) + '</div>' +
+    var html = '<div class="wx-place">' + esc(currentDz().name) + '</div>' + jfSummaryHtml() +
       '<div class="wx-row"><span class="wx-lbl">Ground wind</span><span class="wx-val">' + gWind + '</span></div>' +
       '<div class="wx-row"><span class="wx-lbl">Ground temp</span><span class="wx-val">' +
         (c.temperature_2m != null ? Math.round(c.temperature_2m) + '&deg;C' : '&mdash;') + '</span></div>';
@@ -3116,6 +3165,9 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     lastUpdateTime = null;
     fetchFailed = false;
     weather = null;
+    jumpFc = null;
+    jfCfg.day = 0;
+    renderJumpForecast();
     trackRunIn = loadManualRunIn();
     scheduleTrackRender();
     if (selectedDate !== null) {
@@ -4134,6 +4186,229 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && lp3dOpen()) setOpen(false); });
     window.addEventListener('resize', function() { if (lp3dOpen()) scheduleLp3d(); });
+  })();
+
+  // --- Jump forecast ---
+  // An hour-by-hour call on whether jumping is likely, from the Open-Meteo
+  // forecast for the dropzone, against British Skydiving's limits (Operations
+  // Manual section 8): ground wind 15 kt for AFF/category students, 20 kt for
+  // 'A' licence and above and tandem students, with jumping suspended after two
+  // gusts over the limit; the ground must be visible from the exit point; and
+  // flight visibility at least 5 km. Each factor gives a 0-1 chance and the
+  // hour's likelihood is their product. It is a planning guide: the CI makes the call.
+  var JF_LIMITS = { licensed: 20, student: 15 };   // kt
+  // Model gusts are for open ground at 10 m and run well above what a DZ anemometer
+  // sees, so only part of the gust excess counts. 0.4 was set against a real day:
+  // Headcorn flew lifts all afternoon on 18/09/2026 in forecast 13 kt gusting 25 kt.
+  var JF_GUST_WEIGHT = 0.4;
+  var JF_DAY_START = 8, JF_DAY_END = 19;           // hours considered for the day's figure (and daylight only)
+  var jumpFc = null, jfTimer = null;
+  var jfCfg = { open: false, cat: 'licensed', day: 0 };
+  try { Object.assign(jfCfg, JSON.parse(localStorage.getItem('hm_jf') || '{}')); jfCfg.day = 0; } catch (e) {}
+  function saveJfCfg() { try { localStorage.setItem('hm_jf', JSON.stringify({ open: jfCfg.open, cat: jfCfg.cat })); } catch (e) {} }
+
+  async function fetchJumpForecast() {
+    var dz = currentDz();
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + dz.lat + '&longitude=' + dz.lon +
+      '&hourly=cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_gusts_10m,wind_direction_10m,' +
+      'precipitation,precipitation_probability,visibility,temperature_2m,dew_point_2m,is_day' +
+      '&wind_speed_unit=kn&forecast_days=16&timezone=auto';   // 16 days is as far as the forecast goes
+    try {
+      var r = await fetch(url);
+      if (!r.ok) throw new Error('forecast ' + r.status);
+      var data = await r.json();
+      if (dz !== currentDz()) return;               // dropzone switched mid-request
+      jumpFc = data;
+    } catch (e) { /* keep the last good forecast */ }
+    renderJumpForecast();
+    renderWeather();                                // refreshes the summary line in the sidebar
+  }
+
+  function jfLogistic(x) { return 1 / (1 + Math.exp(-x)); }
+
+  // One forecast hour scored for a wind limit. Returns the likelihood and what is holding it back.
+  function jfScoreHour(i, limit) {
+    var h = jumpFc.hourly;
+    var wind = h.wind_speed_10m[i] || 0, gust = Math.max(h.wind_gusts_10m[i] || 0, wind);
+    var low = h.cloud_cover_low[i] || 0, mid = h.cloud_cover_mid[i] || 0, high = h.cloud_cover_high[i] || 0;
+    var rain = h.precipitation[i] || 0, rainProb = h.precipitation_probability[i] || 0;
+    var vis = h.visibility[i], t = h.temperature_2m[i], td = h.dew_point_2m[i];
+    var baseFt = (t != null && td != null) ? Math.max(0, Math.round((t - td) * 400 / 100) * 100) : null;   // spread x 400 ft
+
+    var effWind = wind + JF_GUST_WEIGHT * (gust - wind);
+    var pWind = jfLogistic((limit - effWind) / 2.5);
+    // Low cloud (below ~10,000 ft) needs gaps to see the ground. Scattered to broken
+    // cumulus (up to ~60%) is routinely jumped through the gaps; it is solid cover
+    // that stops play. Mid-level cloud may only cap the altitude.
+    var pLow = low <= 40 ? 1 : low <= 70 ? 1 - (low - 40) / 30 * 0.35 : low <= 90 ? 0.65 - (low - 70) / 20 * 0.45 : 0.2 - (low - 90) / 10 * 0.15;
+    var pMid = mid <= 50 ? 1 : 1 - (mid - 50) / 50 * 0.3;
+    var pRain = rain >= 1 ? 0.05 : rain >= 0.1 ? 0.35 : 1 - 0.3 * rainProb / 100;
+    var pVis = vis == null ? 1 : vis < 5000 ? 0.05 : vis < 8000 ? 0.6 : 1;
+    var p = pWind * pLow * pMid * pRain * pVis;
+
+    var factors = [
+      [pWind, gust > limit ? 'Gusts ' + Math.round(gust) + ' kt, over the ' + limit + ' kt limit' : 'Wind ' + Math.round(wind) + ' gusting ' + Math.round(gust) + ' kt, close to the ' + limit + ' kt limit'],
+      [pLow, 'Low cloud ' + Math.round(low) + '%' + (baseFt != null ? ', base around ' + baseFt.toLocaleString() + ' ft' : '')],
+      [pMid, 'Mid-level cloud ' + Math.round(mid) + '% may cap the altitude'],
+      [pRain, rain >= 0.1 ? 'Rain ' + rain.toFixed(1) + ' mm/h' : 'Rain risk ' + Math.round(rainProb) + '%'],
+      [pVis, 'Visibility ' + (vis / 1000).toFixed(1) + ' km, limit is 5 km']
+    ].sort(function(a, b) { return a[0] - b[0]; });
+    return {
+      i: i, time: h.time[i], hour: parseInt(h.time[i].slice(11, 13), 10), day: h.time[i].slice(0, 10), isDay: h.is_day[i] === 1,
+      p: p, limiting: factors[0][0] < 0.8 ? factors[0][1] : null,
+      wind: wind, gust: gust, dir: h.wind_direction_10m[i], low: low, mid: mid, high: high, baseFt: baseFt,
+      rain: rain, rainProb: rainProb, vis: vis, pWind: pWind, pLow: pLow, pMid: pMid, pRain: pRain, pVis: pVis
+    };
+  }
+
+  function jfVerdict(p) {
+    return p >= 0.7 ? { word: 'Likely', cls: 'good' } : p >= 0.4 ? { word: 'Marginal', cls: 'marginal' } : { word: 'Unlikely', cls: 'poor' };
+  }
+  function jfNowKey() {                             // the dropzone's local time as 'YYYY-MM-DDTHH'
+    return new Date(Date.now() + (jumpFc.utc_offset_seconds || 0) * 1000).toISOString().slice(0, 13);
+  }
+
+  // Per-day summary: mean likelihood over the daylight operating hours still to
+  // come, and the best run of hours at 60% or better.
+  function jfDays() {
+    var limit = JF_LIMITS[jfCfg.cat], nowKey = jfNowKey(), byDay = {}, order = [];
+    jumpFc.hourly.time.forEach(function(t, i) {
+      var s = jfScoreHour(i, limit);
+      if (!byDay[s.day]) { byDay[s.day] = { day: s.day, hours: [] }; order.push(s.day); }
+      byDay[s.day].hours.push(s);
+    });
+    return order.map(function(k) {
+      var d = byDay[k];
+      d.ops = d.hours.filter(function(s) { return s.isDay && s.hour >= JF_DAY_START && s.hour <= JF_DAY_END && s.time.slice(0, 13) >= nowKey; });
+      d.p = d.ops.length ? d.ops.reduce(function(n, s) { return n + s.p; }, 0) / d.ops.length : null;
+      var best = null, run = [];
+      d.ops.concat([null]).forEach(function(s) {
+        if (s && s.p >= 0.6) { run.push(s); return; }
+        if (run.length && (!best || run.length > best.length)) best = run;
+        run = [];
+      });
+      d.best = best;
+      return d;
+    });
+  }
+
+  function jfDayLabel(day, idx) {
+    if (idx === 0) return 'Today';
+    if (idx === 1) return 'Tomorrow';
+    return new Date(day + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function jfWindow(d) {
+    if (!d.best) return d.ops.length ? 'No settled window' : 'Done for the day';
+    var a = d.best[0].hour, b = d.best[d.best.length - 1].hour + 1;
+    return 'Best ' + ('0' + a).slice(-2) + ':00 to ' + ('0' + b).slice(-2) + ':00';
+  }
+
+  // One-line call for the sidebar weather panel.
+  function jfSummaryHtml() {
+    if (!jumpFc || !jumpFc.hourly) return '';
+    var days = jfDays(), today = days[0], nowKey = jfNowKey();
+    var now = today.hours.find(function(s) { return s.time.slice(0, 13) === nowKey; });
+    var html = '';
+    if (now && now.isDay && today.ops.length) {
+      var v = jfVerdict(now.p);
+      html = '<span class="jf-dot ' + v.cls + '"></span><b>Jumping ' + v.word.toLowerCase() + ' now</b> &middot; ' + Math.round(now.p * 100) + '%' +
+        (now.limiting ? '<br><span class="wx-muted">' + esc(now.limiting) + '</span>' : '');
+    } else if (days[1] && days[1].p != null) {
+      var v2 = jfVerdict(days[1].p);
+      html = '<span class="jf-dot ' + v2.cls + '"></span><b>Tomorrow: ' + v2.word.toLowerCase() + '</b> &middot; ' + Math.round(days[1].p * 100) + '%<br><span class="wx-muted">' + jfWindow(days[1]) + '</span>';
+    }
+    return html ? '<div class="jf-summary" id="jfSummary" title="Open the jump forecast">' + html + '</div>' : '';
+  }
+
+  function renderJumpForecast() {
+    var panel = document.getElementById('jfPanel');
+    if (!panel || !jfCfg.open) return;
+    document.getElementById('jfDzName').textContent = currentDz().name;
+    document.querySelectorAll('#jfPanel .track-seg button').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-cat') === jfCfg.cat); });
+    var $days = document.getElementById('jfDays'), $hours = document.getElementById('jfHours'), $call = document.getElementById('jfCall');
+    if (!jumpFc || !jumpFc.hourly) {
+      $days.innerHTML = ''; $hours.innerHTML = ''; $call.innerHTML = '<span class="wx-muted">Loading forecast&hellip;</span>';
+      return;
+    }
+    var limit = JF_LIMITS[jfCfg.cat], days = jfDays();
+    if (jfCfg.day >= days.length) jfCfg.day = 0;
+
+    $days.innerHTML = days.map(function(d, idx) {
+      var v = d.p != null ? jfVerdict(d.p) : null;
+      return '<button type="button" class="jf-day' + (idx === jfCfg.day ? ' active' : '') + (v ? ' ' + v.cls : '') + (idx >= 7 ? ' far' : '') + '" data-day="' + idx + '">' +
+        '<span class="jf-day-name">' + jfDayLabel(d.day, idx) + '</span>' +
+        '<span class="jf-day-pct">' + (d.p != null ? Math.round(d.p * 100) + '%' : '&mdash;') + '</span>' +
+        '<span class="jf-day-word">' + (v ? v.word : 'Finished') + '</span>' +
+        '<span class="jf-day-best">' + jfWindow(d) + '</span>' +
+        '<span class="jf-day-conf">' + (idx >= 7 ? 'Low confidence' : idx >= 3 ? 'Medium confidence' : 'Good confidence') + '</span></button>';
+    }).join('');
+
+    var active = $days.querySelector('.jf-day.active');
+    if (active) {                                   // keep the chosen day in view, sideways only (never move the page)
+      if (active.offsetLeft < $days.scrollLeft) $days.scrollLeft = active.offsetLeft;
+      else if (active.offsetLeft + active.offsetWidth > $days.scrollLeft + $days.clientWidth) $days.scrollLeft = active.offsetLeft + active.offsetWidth - $days.clientWidth;
+    }
+    var sel = days[jfCfg.day];
+    var shown = sel.hours.filter(function(s) { return s.hour >= JF_DAY_START - 1 && s.hour <= JF_DAY_END + 1; });
+    var nowKey = jfNowKey();
+    var cell = function(v, cls) { return '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + v + '</td>'; };
+    var rowOf = function(label, fn) { return '<tr><th>' + label + '</th>' + shown.map(fn).join('') + '</tr>'; };
+    var tint = function(p) { return p < 0.4 ? 'jf-bad' : p < 0.8 ? 'jf-warn' : ''; };
+    $hours.innerHTML = '<table class="jf-table"><thead><tr><th></th>' + shown.map(function(s) {
+        return '<th class="' + (s.time.slice(0, 13) === nowKey ? 'jf-now' : '') + (s.isDay ? '' : ' jf-night') + '">' + ('0' + s.hour).slice(-2) + '</th>';
+      }).join('') + '</tr></thead><tbody>' +
+      rowOf('Likelihood', function(s) {
+        if (!s.isDay) return cell('dark', 'jf-night');
+        var v = jfVerdict(s.p);
+        return cell('<span class="jf-pct ' + v.cls + '" title="' + esc(s.limiting || 'Within limits') + '">' + Math.round(s.p * 100) + '</span>');
+      }) +
+      rowOf('Wind kt', function(s) { return cell(Math.round(s.wind), tint(s.pWind)); }) +
+      rowOf('Gust kt', function(s) { return cell(Math.round(s.gust), s.gust > limit ? 'jf-bad' : tint(s.pWind)); }) +
+      rowOf('From', function(s) { return cell('<span class="jf-arrow" style="transform:rotate(' + Math.round(s.dir + 180) + 'deg)" title="' + pad3(s.dir) + '&deg;">&uarr;</span>'); }) +
+      rowOf('Low cloud %', function(s) { return cell(Math.round(s.low), tint(s.pLow)); }) +
+      rowOf('Mid cloud %', function(s) { return cell(Math.round(s.mid), tint(s.pMid)); }) +
+      rowOf('High cloud %', function(s) { return cell(Math.round(s.high)); }) +
+      rowOf('Est. base ft', function(s) { return cell(s.low >= 10 && s.baseFt != null ? (s.baseFt >= 1000 ? (s.baseFt / 1000).toFixed(1) + 'k' : s.baseFt) : '&middot;', s.low >= 40 && s.baseFt != null && s.baseFt < 3000 ? 'jf-bad' : ''); }) +
+      rowOf('Rain mm', function(s) { return cell(s.rain >= 0.1 ? s.rain.toFixed(1) : (s.rainProb >= 30 ? Math.round(s.rainProb) + '%' : '&middot;'), tint(s.pRain)); }) +
+      rowOf('Vis km', function(s) { return cell(s.vis != null ? (s.vis >= 10000 ? '10+' : (s.vis / 1000).toFixed(1)) : '&middot;', tint(s.pVis)); }) +
+      '</tbody></table>';
+
+    // Headline for the selected day, with the main thing holding it back.
+    var worst = null;
+    sel.ops.forEach(function(s) { if (s.limiting && (!worst || s.p < worst.p)) worst = s; });
+    var head;
+    if (sel.p == null) head = '<b>' + jfDayLabel(sel.day, jfCfg.day) + ':</b> no daylight jumping hours left.';
+    else {
+      var v = jfVerdict(sel.p);
+      head = '<span class="jf-dot ' + v.cls + '"></span><b>' + jfDayLabel(sel.day, jfCfg.day) + ': jumping ' + v.word.toLowerCase() + '</b>, about <b>' + Math.round(sel.p * 100) +
+        '%</b> across the ' + (jfCfg.day === 0 ? 'rest of the ' : '') + 'day. ' + jfWindow(sel) + '.' +
+        (worst ? ' Main risk: ' + esc(worst.limiting.charAt(0).toLowerCase() + worst.limiting.slice(1)) + ' (' + ('0' + worst.hour).slice(-2) + ':00).' : ' Nothing close to the limits.');
+    }
+    $call.innerHTML = head;
+    document.getElementById('jfNote').innerHTML = 'Scored against British Skydiving limits for ' +
+      (jfCfg.cat === 'student' ? 'AFF and category students (15 kt)' : '&lsquo;A&rsquo; licence and above and tandems (20 kt)') +
+      ': ground wind and gusts, ground visible from the exit point (low cloud), 5 km visibility, and rain. Cloud base is estimated from the temperature and dew point spread. ' +
+      'Low cloud is below about 10,000 ft, mid 10,000 to 26,000 ft. Beyond about a week the forecast is only a rough trend. A forecast guide only: the CI makes the call on the day. Forecast: Open-Meteo.';
+  }
+
+  (function() {
+    var $btn = document.getElementById('jfBtn'), $panel = document.getElementById('jfPanel');
+    var apply = function() { $panel.classList.toggle('open', !!jfCfg.open); $btn.classList.toggle('active', !!jfCfg.open); };
+    var setOpen = function(on) { jfCfg.open = on; saveJfCfg(); apply(); renderJumpForecast(); };
+    $btn.addEventListener('click', function() { setOpen(!jfCfg.open); });
+    document.querySelectorAll('#jfPanel .track-seg button').forEach(function(b) {
+      b.addEventListener('click', function() { jfCfg.cat = b.getAttribute('data-cat'); saveJfCfg(); renderJumpForecast(); renderWeather(); });
+    });
+    document.getElementById('jfDays').addEventListener('click', function(e) {
+      var t = e.target.closest ? e.target.closest('.jf-day') : null;
+      if (!t) return;
+      jfCfg.day = parseInt(t.getAttribute('data-day'), 10) || 0;
+      renderJumpForecast();
+    });
+    document.getElementById('wxContent').addEventListener('click', function(e) {
+      if (e.target.closest && e.target.closest('#jfSummary')) { setOpen(true); $panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+    apply();
   })();
 
   // --- Init ---
