@@ -94,6 +94,10 @@ The sidebar map under the weather has a **Landing pattern / Run-in** selector.
 
 Time between groups = distance / ground speed, rounded up, never under 5 s, for the commonly taught 300 m between solos and small groups and 500 m between groups of four or more. British Skydiving's Operations Manual, Jump Pilots Manual and Tracking Progression Manual set no separation figures, so these are not a British Skydiving standard: the CI and jumpmaster brief is what counts. The constants are `RI_SEP_SMALL_M`, `RI_SEP_LARGE_M` and `RI_MIN_SECS` in `index.html` if a DZ uses different numbers.
 
+## Privacy
+
+The GoSkydive feed sends medical details and free-text notes with each person (`isGpMedical`, `skydiveConditions`, `evaluationConditions`, `prominantNote`, and `specialWarning` on sets). This board is shared between jumpers, so those fields are deleted as the data arrives and are never displayed. Do not add them back to the display.
+
 ## Data Schema
 
 ### Manifest

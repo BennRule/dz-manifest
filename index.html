@@ -836,7 +836,6 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 .status-badge.cancelled { background: var(--red-100); color: #991b1b; }
 
 .tag-coach { background: #ecfeff; color: #0e7490; }
-.tag-med { background: var(--red-100); color: #991b1b; }
 .tag-own { background: var(--slate-100); color: var(--slate-600); }
 .tag-event { background: #fce7f3; color: #9d174d; }
 
@@ -1851,6 +1850,15 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       manifests = (manifestData.manifestCollection || []).filter(function(m) {
         return m.dropzoneId === config.dzId && m.manifestDate === today;
       });
+      // Privacy: the booking system sends medical details and free-text notes with
+      // each person. This board is shared, so they are thrown away on arrival and
+      // never displayed (GP medical flag, named conditions, evaluation notes, notes).
+      manifests.forEach(function(m) {
+        (m.customers || []).concat(m.colleagues || []).forEach(function(p) {
+          delete p.skydiveConditions; delete p.evaluationConditions; delete p.isGpMedical; delete p.prominantNote;
+        });
+        (m.sets || []).forEach(function(st) { delete st.specialWarning; });
+      });
 
       // Collect pilot / co-pilot / jump-master colleague ids so we can resolve
       // them to names (the manifest only carries the ids, not the names).
@@ -2442,13 +2450,9 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
           if (isHandcam) tags += '<span class="tag tag-hc">HC</span>';
           if (videographer) tags += '<span class="tag tag-ff">FF</span>';
           if (skydiveResult === 'declined') tags += '<span class="tag tag-declined">Declined</span>';
-          if (cust.skydiveConditions) tags += '<span class="tag tag-condition" title="' + esc(cust.skydiveConditions) + '">' + esc(cust.skydiveConditions) + '</span>';
-          if (cust.evaluationConditions) tags += '<span class="tag tag-note" title="' + esc(cust.evaluationConditions) + '">' + esc(cust.evaluationConditions) + '</span>';
           if (custSet && custSet.requiresCoach) tags += '<span class="tag tag-coach">Coach</span>';
-          if (cust.isGpMedical) tags += '<span class="tag tag-med">GP Med</span>';
           if (cust.isUsingOwnEquipment) tags += '<span class="tag tag-own">Own kit</span>';
           if (!cust.fitSignatureFileLocation) tags += '<span class="tag tag-nosig">No sig</span>';
-          if (cust.prominantNote) tags += '<span class="tag tag-note" title="' + esc(cust.prominantNote) + '">' + esc(cust.prominantNote) + '</span>';
 
           return '<div class="tandem-row">' +
             '<div class="tandem-info">' +
@@ -2491,7 +2495,6 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
           var tags = '';
           if (colAlt) tags += '<span class="tag tag-alt">' + colAlt + '</span>';
           if (col.cameraName) tags += '<span class="tag tag-cam">' + esc(col.cameraName) + '</span>';
-          if (colSet && colSet.specialWarning) tags += '<span class="tag tag-note" title="' + esc(colSet.specialWarning) + '">' + esc(colSet.specialWarning) + '</span>';
           if (!col.fitSignatureFileLocation) tags += '<span class="tag tag-nosig">No sig</span>';
 
           sportsHtml += '<div class="sport-row">' +
@@ -2531,11 +2534,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
           var tags = '';
           if (custAlt) tags += '<span class="tag tag-alt">' + custAlt + '</span>';
           if (skydiveResult === 'declined') tags += '<span class="tag tag-declined">Declined</span>';
-          if (cust.skydiveConditions) tags += '<span class="tag tag-condition" title="' + esc(cust.skydiveConditions) + '">' + esc(cust.skydiveConditions) + '</span>';
-          if (cust.evaluationConditions) tags += '<span class="tag tag-note" title="' + esc(cust.evaluationConditions) + '">' + esc(cust.evaluationConditions) + '</span>';
-          if (cust.prominantNote) tags += '<span class="tag tag-note" title="' + esc(cust.prominantNote) + '">' + esc(cust.prominantNote) + '</span>';
           if (custSet && custSet.requiresCoach) tags += '<span class="tag tag-coach">Coach</span>';
-          if (cust.isGpMedical) tags += '<span class="tag tag-med">GP Med</span>';
           if (cust.isUsingOwnEquipment) tags += '<span class="tag tag-own">Own kit</span>';
           if (!cust.fitSignatureFileLocation) tags += '<span class="tag tag-nosig">No sig</span>';
 
@@ -2584,12 +2583,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
           if (custSet && custSet.skydiveType) tags += '<span class="tag tag-aff">' + esc(fmtAffType(custSet.skydiveType)) + '</span>';
           if (custAlt) tags += '<span class="tag tag-alt">' + custAlt + '</span>';
           if (skydiveResult === 'declined') tags += '<span class="tag tag-declined">Declined</span>';
-          if (custSet && custSet.specialWarning) tags += '<span class="tag tag-note" title="' + esc(custSet.specialWarning) + '">' + esc(custSet.specialWarning) + '</span>';
-          if (cust.skydiveConditions) tags += '<span class="tag tag-condition" title="' + esc(cust.skydiveConditions) + '">' + esc(cust.skydiveConditions) + '</span>';
-          if (cust.evaluationConditions) tags += '<span class="tag tag-note" title="' + esc(cust.evaluationConditions) + '">' + esc(cust.evaluationConditions) + '</span>';
-          if (cust.prominantNote) tags += '<span class="tag tag-note" title="' + esc(cust.prominantNote) + '">' + esc(cust.prominantNote) + '</span>';
           if (custSet && custSet.requiresCoach) tags += '<span class="tag tag-coach">Coach</span>';
-          if (cust.isGpMedical) tags += '<span class="tag tag-med">GP Med</span>';
           if (cust.isUsingOwnEquipment) tags += '<span class="tag tag-own">Own kit</span>';
           if (!cust.fitSignatureFileLocation) tags += '<span class="tag tag-nosig">No sig</span>';
 
