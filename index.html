@@ -941,7 +941,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 .track-tools button.active { background: white; color: var(--slate-900); border-color: white; }
 .lp3d .track-tools { flex-wrap: wrap; right: 8px; }
 .track-view.expanded { position: fixed; inset: 0; z-index: 1000; border: 0; border-radius: 0; display: flex; align-items: center; justify-content: center; background: #020617; }
-.track-view.expanded canvas { width: min(100vw, 160vh); height: auto; }
+.track-view.expanded canvas { width: 100vw; height: 100vh; height: 100dvh; }
+.track-view.expanded .track-tools, .lp3d .track-tools { bottom: calc(8px + env(safe-area-inset-bottom, 0px)); left: calc(8px + env(safe-area-inset-left, 0px)); }
 .track-figcap { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); margin-bottom: 6px; }
 .track-summary { font-size: 13px; color: var(--slate-700); margin-top: 12px; line-height: 1.5; }
 .track-summary b { color: var(--slate-900); font-family: 'DM Mono', monospace; font-weight: 500; }
@@ -1005,7 +1006,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 .ri-upperhead { fill: #ffffff; }
 .lp3d { display: none; position: fixed; inset: 0; z-index: 1000; background: #020617; align-items: center; justify-content: center; }
 .lp3d.open { display: flex; }
-.lp3d canvas { display: block; width: min(100vw, 160vh); height: auto; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.lp3d canvas { display: block; width: 100vw; height: 100vh; height: 100dvh; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .lp3d canvas.dragging { cursor: grabbing; }
 .lp-canopy { font-size: 11px; color: var(--slate-500); text-align: center; margin-bottom: 8px; }
 .lp-canopy input { width: 44px; font-family: 'DM Mono', monospace; font-size: 12px; padding: 2px 4px; border: 1px solid var(--slate-200); border-radius: 4px; text-align: center; }
@@ -3550,6 +3551,20 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   // camera: cam = { x, y (local metres), h (metres above ground), hdg, pitch
   // (degrees below the horizon), fov (vertical, degrees), near }. `step` > 1 draws
   // coarse blocks for speed. Returns the projection so overlays can be drawn on top.
+  // Full-screen views match the canvas to the screen's shape (so a phone held
+  // upright gets a tall picture, not a letterbox), at a fixed pixel budget.
+  function fitCanvasToBox(cv, box) {
+    var asp = (box.clientWidth || 16) / (box.clientHeight || 10);
+    var W = Math.round(Math.sqrt(1300000 * asp) / 2) * 2, H = Math.round(W / asp / 2) * 2;
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  }
+  // Field of view is quoted for a landscape frame. In a tall frame the vertical
+  // angle is opened up so the view doesn't become a narrow slot.
+  function frameFov(fov, W, H) {
+    if (H <= W) return fov;
+    return 2 * Math.atan(Math.tan(fov * Math.PI / 360) * Math.min(1.6, H / W)) * 180 / Math.PI;
+  }
+
   function paintGround(ctx, W, H, cam, texs, step, haze) {
     var ex = cam.x, ey = cam.y, h = cam.h;
     var psi = cam.hdg * Math.PI / 180, phi = cam.pitch * Math.PI / 180;
@@ -3630,7 +3645,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     var viewHdg = ((plan.trackHdg + trackCam.yaw) % 360 + 360) % 360;
     var cv = document.getElementById('trackView'), ctx = cv.getContext('2d');
     var big = cv.parentNode.classList.contains('expanded');   // full-screen gets a sharper render
-    if (cv.width !== (big ? 1440 : 960)) { cv.width = big ? 1440 : 960; cv.height = big ? 900 : 600; }
+    if (big) fitCanvasToBox(cv, cv.parentNode);
+    else if (cv.width !== 960 || cv.height !== 600) { cv.width = 960; cv.height = 600; }
     var W = cv.width, H = cv.height;
     var h = plan.exitAlt * 0.3048, ex = plan.exit.x, ey = plan.exit.y;
     // The canvas is scaled to fit by CSS, so on a phone the overlay text is drawn
@@ -3657,7 +3673,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     }
 
     var step = trackDragging ? (big ? 4 : 3) : 1;   // coarse blocks while dragging keep it responsive
-    var view = paintGround(ctx, W, H, { x: ex, y: ey, h: h, hdg: viewHdg, pitch: trackCam.pitch, fov: trackCam.fov, near: 50 },
+    var view = paintGround(ctx, W, H, { x: ex, y: ey, h: h, hdg: viewHdg, pitch: trackCam.pitch, fov: frameFov(trackCam.fov, W, H), near: 50 },
       texs, step, { base: 70000, start: 14000, range: 30000 });
     var P = view.P, phi = view.phi;
     var project = function(x, y) { return view.project(x, y, 0); };
@@ -3849,7 +3865,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       if (settleTimer) clearTimeout(settleTimer);
       settleTimer = setTimeout(function() { trackDragging = false; renderTrack(); }, 220);
     };
-    var degPerPx = function() { return trackCam.fov / ($cv.getBoundingClientRect().height || 600); };
+    var degPerPx = function() { return frameFov(trackCam.fov, $cv.width, $cv.height) / ($cv.getBoundingClientRect().height || 600); };
     $cv.addEventListener('pointerdown', function(e) {
       pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
       try { $cv.setPointerCapture(e.pointerId); } catch (err) {}
@@ -3926,7 +3942,9 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 
   function renderLanding3D() {
     if (!lp3dOpen()) return;
-    var cv = document.getElementById('lp3dCanvas'), ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+    var cv = document.getElementById('lp3dCanvas'), ctx = cv.getContext('2d');
+    fitCanvasToBox(cv, document.getElementById('lp3d'));
+    var W = cv.width, H = cv.height, tall = H > W;
     var cssW = cv.getBoundingClientRect().width || W;
     var fs = Math.min(2.3, Math.max(1, W * 0.75 / cssW));
     var px = function(n) { return Math.round(n * fs) + 'px'; };
@@ -3947,17 +3965,17 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 
     // Starting view: a three-quarter view from the far side of the circuit, so the
     // final runs across and away from you with the base and downwind legs behind it.
-    var key = currentDz().key + '|' + g.landHdg + '|' + g.side + '|' + Math.round(extent);
+    var key = currentDz().key + '|' + g.landHdg + '|' + g.side + '|' + Math.round(extent) + '|' + (tall ? 'tall' : 'wide');
     if (lp3dCam.forKey !== key) {
       lp3dCam.forKey = key;
       lp3dCam.yaw = (g.landHdg + 58 * g.side + 360) % 360;
-      lp3dCam.pitch = 22;
-      lp3dCam.dist = Math.max(650, extent * 2.6);
+      lp3dCam.pitch = frameFov(50, W, H) / 2 - 3;    // horizon just inside the top of the frame, tall or wide
+      lp3dCam.dist = Math.max(650, extent * 2.6) * (tall ? 1.25 : 1);   // stand a little further back in a narrow frame
     }
     var pr = lp3dCam.pitch * Math.PI / 180, look = bearingVec(lp3dCam.yaw);
     var cam = {
       x: focus[0] - look.x * lp3dCam.dist * Math.cos(pr), y: focus[1] - look.y * lp3dCam.dist * Math.cos(pr),
-      h: Math.max(8, focus[2] + lp3dCam.dist * Math.sin(pr)), hdg: lp3dCam.yaw, pitch: lp3dCam.pitch, fov: 50, near: 3
+      h: Math.max(8, focus[2] + lp3dCam.dist * Math.sin(pr)), hdg: lp3dCam.yaw, pitch: lp3dCam.pitch, fov: frameFov(50, W, H), near: 3
     };
 
     var tex = [
