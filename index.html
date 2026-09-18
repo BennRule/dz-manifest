@@ -938,6 +938,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 .track-tools { position: absolute; left: 8px; bottom: 8px; display: flex; gap: 6px; z-index: 2; }
 .track-tools button { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; min-width: 34px; height: 34px; padding: 0 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.35); background: rgba(15,23,42,0.72); color: white; cursor: pointer; }
 .track-tools button:hover { background: rgba(15,23,42,0.92); }
+.track-tools button.active { background: white; color: var(--slate-900); border-color: white; }
+.lp3d .track-tools { flex-wrap: wrap; right: 8px; }
 .track-view.expanded { position: fixed; inset: 0; z-index: 1000; border: 0; border-radius: 0; display: flex; align-items: center; justify-content: center; background: #020617; }
 .track-view.expanded canvas { width: min(100vw, 160vh); height: auto; }
 .track-figcap { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); margin-bottom: 6px; }
@@ -1342,6 +1344,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     <button type="button" data-tool="in" title="Move closer">+</button>
     <button type="button" data-tool="out" title="Move back">&minus;</button>
     <button type="button" data-tool="reset" title="Back to the starting view">Reset</button>
+    <button type="button" class="lp-hand-btn3d" data-hand="left" title="Left-hand pattern">Left-hand</button>
+    <button type="button" class="lp-hand-btn3d" data-hand="right" title="Right-hand pattern">Right-hand</button>
     <button type="button" data-tool="close" title="Close (Esc)">Close</button>
   </div>
 </div>
@@ -3247,15 +3251,18 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   });
 
   // --- Landing pattern hand toggle ---
-  document.querySelectorAll('.lp-hand-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      landingHand = this.getAttribute('data-hand');
-      document.querySelectorAll('.lp-hand-btn').forEach(function(b) {
-        b.classList.toggle('active', b.getAttribute('data-hand') === landingHand);
-      });
-      renderLanding();
+  function setLandingHand(hand) {
+    landingHand = hand;
+    document.querySelectorAll('.lp-hand-btn, .lp-hand-btn3d').forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-hand') === landingHand);
     });
+    renderLanding();
+    renderLanding3D();   // no-op unless the 3D view is open
+  }
+  document.querySelectorAll('.lp-hand-btn, .lp-hand-btn3d').forEach(function(btn) {
+    btn.addEventListener('click', function() { setLandingHand(this.getAttribute('data-hand')); });
   });
+  setLandingHand(landingHand);
 
   // --- Sidebar map mode: landing pattern or run-in ---
   (function() {
@@ -4091,6 +4098,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     $modal.querySelectorAll('.track-tools button').forEach(function(b) {
       b.addEventListener('click', function() {
         var tool = b.getAttribute('data-tool');
+        if (!tool) return;                           // left/right-hand buttons have their own handler
         if (tool === 'close') { setOpen(false); return; }
         if (tool === 'reset') lp3dCam.forKey = null; else lp3dCam.dist *= tool === 'in' ? 0.7 : 1 / 0.7;
         moved();
