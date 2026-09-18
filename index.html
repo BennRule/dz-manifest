@@ -910,6 +910,52 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 
 .sidebar-badges { display: flex; gap: 4px; flex-shrink: 0; }
 
+/* Tracking plan */
+.track-panel { display: none; background: white; border-bottom: 1px solid var(--slate-200); padding: 16px 24px 18px; }
+.track-panel.open { display: block; }
+.track-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.track-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-800); }
+.track-sub { font-size: 12px; color: var(--slate-500); }
+.track-controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: flex-end; margin-bottom: 14px; }
+.track-field { display: flex; flex-direction: column; gap: 4px; }
+.track-field > span { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); }
+.track-field input[type=number] { width: 84px; font-family: 'DM Mono', monospace; font-size: 13px; padding: 6px 8px; border: 1px solid var(--slate-300); border-radius: 6px; color: var(--slate-800); }
+.track-inline { display: flex; align-items: center; gap: 6px; }
+.track-seg { display: flex; }
+.track-seg button { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 14px; border: 1px solid var(--slate-300); background: white; color: var(--slate-600); cursor: pointer; }
+.track-seg button:first-child { border-radius: 6px 0 0 6px; }
+.track-seg button:last-child { border-radius: 0 6px 6px 0; border-left: none; }
+.track-seg button.active { background: var(--slate-800); border-color: var(--slate-800); color: white; }
+.track-auto { font-size: 12px; color: var(--slate-600); display: flex; align-items: center; gap: 4px; }
+.track-grid { display: grid; grid-template-columns: minmax(260px, 460px) minmax(0, 1fr); gap: 18px; align-items: start; }
+.track-map { position: relative; width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--slate-200); background: var(--slate-100); }
+.track-map img, .track-map svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.track-map img { object-fit: cover; }
+.track-view { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--slate-200); background: #0f172a; }
+.track-view canvas { display: block; width: 100%; height: auto; cursor: zoom-in; }
+.track-view.expanded { position: fixed; inset: 0; z-index: 1000; border: 0; border-radius: 0; display: flex; align-items: center; justify-content: center; background: #020617; }
+.track-view.expanded canvas { width: min(100vw, 160vh); height: auto; cursor: zoom-out; }
+.track-figcap { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); margin-bottom: 6px; }
+.track-summary { font-size: 13px; color: var(--slate-700); margin-top: 12px; line-height: 1.5; }
+.track-summary b { color: var(--slate-900); font-family: 'DM Mono', monospace; font-weight: 500; }
+.track-note { font-size: 11px; color: var(--slate-400); margin-top: 6px; }
+.track-note a { color: var(--slate-500); }
+.tm-runin { stroke: #38bdf8; stroke-width: 3; fill: none; }
+.tm-runin-head { fill: #38bdf8; }
+.tm-track-air { stroke: #fde047; stroke-width: 3; stroke-dasharray: 8 6; fill: none; }
+.tm-track { stroke: #f97316; stroke-width: 4; fill: none; }
+.tm-track-head { fill: #f97316; }
+.tm-wind { stroke: white; stroke-width: 2.5; fill: none; }
+.tm-wind-head { fill: white; }
+.tm-dz { fill: none; stroke: #22c55e; stroke-width: 3; }
+.tm-exit { fill: #38bdf8; stroke: white; stroke-width: 2; }
+.tm-pull { fill: #f97316; stroke: white; stroke-width: 2; }
+.tm-lbl { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; fill: white; paint-order: stroke; stroke: rgba(15,23,42,0.85); stroke-width: 4px; stroke-linejoin: round; }
+.tm-place { font-family: 'Barlow', 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; fill: #f8fafc; paint-order: stroke; stroke: rgba(15,23,42,0.8); stroke-width: 3.5px; stroke-linejoin: round; }
+.tm-place-dot { fill: #f8fafc; stroke: rgba(15,23,42,0.8); stroke-width: 1.5; }
+.tm-scale { stroke: white; stroke-width: 3; }
+@media (max-width: 900px) { .track-grid { grid-template-columns: 1fr; } .track-panel { padding: 14px 16px; } }
+
 /* Weather + landing pattern */
 .wx-panel { padding: 14px 16px; border-top: 1px solid var(--slate-100); }
 .wx-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--slate-500); margin-bottom: 8px; }
@@ -1162,6 +1208,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   <span style="width:1px;height:20px;background:var(--slate-200);margin:0 4px;"></span>
   <button class="filter-btn" data-filter="sports">Sports Only</button>
   <span style="width:1px;height:20px;background:var(--slate-200);margin:0 4px;"></span>
+  <button class="filter-btn" id="trackBtn" title="Tracking jump planner">&#10138; Track Plan</button>
   <label class="filter-btn prevdays-label" id="prevDaysBtn">&#128197; Previous Days<input type="date" id="datePicker" class="date-input" aria-label="Pick a date to view"></label>
   <span id="historyLabel" class="history-label"></span>
   <button class="filter-btn today-btn" id="todayBtn">&larr; Back to Today</button>
@@ -1171,6 +1218,41 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 <div class="aircraft-bar" id="aircraftBar">
   <span class="aircraft-bar-label">Aircraft</span>
 </div>
+
+<!-- Tracking plan -->
+<section class="track-panel" id="trackPanel">
+  <div class="track-head">
+    <span class="track-title">Tracking Plan &middot; <span id="trackDzName"></span></span>
+    <span class="track-sub">Track left or right off the run-in. Planning aid only: confirm the run-in and exit order with the pilot and DZ.</span>
+  </div>
+  <div class="track-controls">
+    <label class="track-field"><span>Run-in heading</span>
+      <span class="track-inline">
+        <input type="number" id="trackRunIn" min="0" max="359" step="5">
+        <label class="track-auto"><input type="checkbox" id="trackRunInAuto" checked> Auto (into upper wind)</label>
+      </span>
+    </label>
+    <div class="track-field"><span>Track</span>
+      <div class="track-seg"><button data-side="left">Left</button><button data-side="right">Right</button></div>
+    </div>
+    <label class="track-field"><span>Exit height (ft)</span><input type="number" id="trackExitAlt" min="3000" max="25000" step="500"></label>
+    <label class="track-field"><span>Pull height (ft)</span><input type="number" id="trackPullAlt" min="2000" max="10000" step="500"></label>
+    <label class="track-field"><span>Glide ratio</span><input type="number" id="trackGlide" min="0.3" max="3" step="0.1"></label>
+    <label class="track-field"><span>Exit past DZ (km)</span><input type="number" id="trackOffset" min="-5" max="5" step="0.1"></label>
+  </div>
+  <div class="track-grid">
+    <div>
+      <div class="track-figcap">Plan view (north up)</div>
+      <div class="track-map"><img id="trackMapImg" alt="Satellite map of the tracking plan"><svg id="trackMapSvg" viewBox="0 0 640 640"></svg></div>
+    </div>
+    <div>
+      <div class="track-figcap" id="trackViewCap">View from exit height along the track</div>
+      <div class="track-view" title="Click to enlarge"><canvas id="trackView" width="960" height="600"></canvas></div>
+    </div>
+  </div>
+  <div class="track-summary" id="trackSummary"></div>
+  <div class="track-note" id="trackNote"></div>
+</section>
 
 <!-- Main content -->
 <div class="main">
@@ -1291,6 +1373,22 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     return DROPZONES.find(function(d) { return d.key === config.dzId; }) || DROPZONES[0];
   }
   function isBurble() { return currentDz().provider === 'burble'; }
+
+  // Towns and villages around each dropzone, as landmarks for the tracking plan:
+  // [name, lat, lon, rank] with rank 2 = city, 1 = town, 0 = village. From
+  // OpenStreetMap (ODbL), baked in so the plan doesn't depend on a live lookup.
+  const DZ_PLACES = {
+    'dz_0kFFGQXAkk': [["Headcorn",51.1684,0.6276,0],["Smarden",51.1489,0.6867,0],["Frittenden",51.1404,0.5928,0],["Biddenden",51.1154,0.6429,0],["Grafty Green",51.2087,0.6792,0],["Egerton",51.1951,0.729,0],["Boughton Malherbe",51.214,0.6943,0],["Staplehurst",51.1627,0.5513,0],["High Halden",51.1035,0.7112,0],["Pluckley",51.1753,0.7546,0],["Sutton Valence",51.2126,0.5926,0],["Bethersden",51.1272,0.7528,0],["Kingswood",51.2275,0.632,0],["East End",51.0864,0.6204,0],["Tenterden",51.0701,0.6888,1],["Cranbrook",51.0965,0.5321,1],["Ashford",51.1486,0.8723,1],["Maidstone",51.2748,0.5232,1],["Paddock Wood",51.181,0.389,1],["Sittingbourne",51.3397,0.7342,1],["West Malling",51.2954,0.4095,1],["Rainham",51.3633,0.6084,1],["Rye",50.9512,0.7328,1],["Snodland",51.3296,0.4426,1],["Faversham",51.3158,0.8911,1],["Winchelsea",50.9244,0.7086,1],["Chatham",51.3819,0.5266,1],["Gillingham",51.3872,0.5462,1],["Tonbridge",51.1955,0.2751,1],["Royal Tunbridge Wells",51.1371,0.2673,1]],
+    'dz_0dropzone1': [["Ford",51.0953,-1.7759,0],["Stratford-sub-Castle",51.0888,-1.8115,0],["Winterbourne Earls",51.1062,-1.7554,0],["Winterbourne Dauntsey",51.1123,-1.7502,0],["Laverstock",51.0706,-1.7756,0],["Lower Woodford",51.1167,-1.8219,0],["Salisbury",51.0691,-1.7954,2],["Winterbourne Gunner",51.1159,-1.7441,0],["Middle Woodford",51.1239,-1.8304,0],["Quidhampton",51.0785,-1.8438,0],["Upper Woodford",51.1351,-1.8235,0],["Porton",51.1285,-1.7325,0],["Britford",51.0534,-1.772,0],["Great Durnford",51.1427,-1.806,0],["Wilton",51.0805,-1.8607,1],["Firsdown",51.0987,-1.7,0],["Amesbury",51.1723,-1.7818,1],["Tidworth",51.2381,-1.6642,1],["Fordingbridge",50.9268,-1.7917,1],["Stockbridge",51.1141,-1.493,1],["Ludgershall",51.2556,-1.6222,1],["Romsey",50.9891,-1.4999,1],["Andover",51.2078,-1.4794,1],["Verwood",50.8801,-1.8752,1],["Ringwood",50.8469,-1.7914,1],["Totton",50.9196,-1.4895,1]],
+    'dz_0rU8gA2pHO': [["Canisland",51.5898,-4.0741,0],["Ilston",51.5935,-4.0865,0],["Upper Killay",51.614,-4.0399,0],["Kittle",51.5839,-4.0592,0],["Three Crosses",51.628,-4.0682,0],["Lunnon",51.5877,-4.0993,0],["Bishopston",51.5786,-4.0532,0],["Parkmill",51.583,-4.098,0],["Murton",51.5822,-4.0416,0],["Pennard",51.5766,-4.0853,0],["Dunvant",51.6254,-4.0333,0],["Manselfield",51.5797,-4.0318,0],["Blue Anchor",51.6353,-4.0967,0],["Southgate",51.5698,-4.0909,0],["Loughor",51.6654,-4.0678,1],["Gorseinon",51.6694,-4.0416,1],["Swansea",51.6196,-3.9459,2],["Llanelli",51.6797,-4.162,1],["Pontarddulais",51.715,-4.0404,1],["Burry Port",51.6858,-4.2502,1],["Clydach",51.6964,-3.8916,1],["Briton Ferry",51.636,-3.8217,1],["Neath",51.6628,-3.8039,1],["Port Talbot",51.5952,-3.7824,1],["Pontardawe",51.722,-3.8489,1],["Ammanford",51.7926,-3.9888,1],["Kidwelly",51.7364,-4.3062,1],["Brynamman",51.8122,-3.8677,1],["Pyle",51.5288,-3.6933,1],["Maesteg",51.6092,-3.658,1]],
+    'burble:531': [["Langar",52.9046,-0.923,0],["Harby",52.872,-0.8928,0],["Barnstone",52.9113,-0.9098,0],["Plungar",52.8974,-0.8597,0],["Granby",52.9183,-0.8856,0],["Colston Bassett",52.8933,-0.9601,0],["Hose",52.8571,-0.9065,0],["Stathern",52.8721,-0.8549,0],["Barkestone",52.9052,-0.8414,0],["Sutton",52.9291,-0.8688,0],["Cropwell Bishop",52.9136,-0.9848,0],["Long Clawson",52.8387,-0.9248,0],["Eastwell",52.8492,-0.8484,0],["Elton on the Hill",52.9407,-0.8601,0],["Bingham",52.9516,-0.9522,1],["Cotgrave",52.9109,-1.0375,1],["Melton Mowbray",52.7646,-0.8869,1],["Netherfield",52.9637,-1.0784,1],["Carlton",52.9669,-1.0879,1],["West Bridgford",52.9311,-1.1257,1],["Grantham",52.9132,-0.6439,1],["Nottingham",52.9534,-1.1496,2],["Arnold",53.0053,-1.1256,1],["Southwell",53.0783,-0.9551,1],["Beeston",52.9257,-1.2162,1],["Newark on Trent",53.0762,-0.8092,1],["Bulwell",53.0011,-1.1972,1],["Syston",52.6992,-1.073,1],["Loughborough",52.7724,-1.2078,1],["Long Eaton",52.8986,-1.2708,1]],
+    'burble:398': [["Haxton",51.2433,-1.7882,0],["Netheravon",51.2394,-1.7921,0],["Figheldean",51.223,-1.7819,0],["Enford",51.2613,-1.8023,0],["Durrington",51.1994,-1.7748,0],["Everleigh",51.2814,-1.7105,0],["Bulford",51.1908,-1.7581,0],["Larkhill",51.1965,-1.8176,0],["Upavon",51.2937,-1.8097,0],["Tidworth",51.2381,-1.6642,1],["Shipton Bellinger",51.2082,-1.6713,0],["Rushall",51.3012,-1.8234,0],["Amesbury",51.1723,-1.7818,1],["West Amesbury",51.1718,-1.8009,0],["Charlton St Peter",51.3042,-1.8334,0],["Manningford Bohune",51.3183,-1.8041,0],["Ludgershall",51.2556,-1.6222,1],["Wilton",51.0805,-1.8607,1],["Salisbury",51.0691,-1.7954,2],["Marlborough",51.4202,-1.7318,1],["Andover",51.2078,-1.4794,1],["Devizes",51.3525,-1.9958,1],["Stockbridge",51.1141,-1.493,1],["Hungerford",51.4153,-1.5154,1],["Calne",51.438,-2.0051,1],["Westbury",51.2611,-2.1837,1],["Whitchurch",51.2299,-1.3384,1],["Warminster",51.2054,-2.1832,1],["Melksham",51.3726,-2.1374,1]],
+    'burble:8154': [["Water Newton",52.5611,-0.3668,0],["Stibbington",52.5752,-0.3967,0],["Sutton",52.5779,-0.3809,0],["Yarwell",52.5669,-0.4209,0],["Elton",52.5324,-0.3983,0],["Nassington",52.5527,-0.4303,0],["Wansford",52.581,-0.4168,0],["Ailsworth",52.5764,-0.3498,0],["Castor",52.5723,-0.3405,0],["Chesterton",52.5447,-0.337,0],["Alwalton",52.5496,-0.3291,0],["Upton",52.5907,-0.3673,0],["Thornhaugh",52.5922,-0.4254,0],["Fotheringhay",52.526,-0.4376,0],["Peterborough",52.5726,-0.2427,2],["Oundle",52.4809,-0.4674,1],["Yaxley",52.5189,-0.253,1],["Stamford",52.652,-0.4805,1],["Market Deeping",52.6754,-0.3175,1],["Whittlesey",52.555,-0.1226,1],["Crowland",52.6757,-0.1684,1],["Thrapston",52.3969,-0.5369,1],["Corby",52.4877,-0.7033,1],["Ramsey",52.4494,-0.1021,1],["Uppingham",52.5887,-0.7234,1],["Bourne",52.7682,-0.3772,1],["Raunds",52.3422,-0.5345,1],["Oakham",52.6697,-0.7273,1],["Huntingdon",52.3305,-0.1844,1],["Kettering",52.3994,-0.728,1]],
+    'burble:9134': [["Cockerham",53.9634,-2.8168,0],["Forton",53.9556,-2.7835,0],["Glasson Dock",53.9971,-2.85,0],["Galgate",53.9946,-2.7872,0],["Sunderland",53.9969,-2.8762,0],["Ellel",53.9979,-2.7851,0],["Winmarleigh",53.923,-2.8084,0],["Overton",54.0147,-2.8615,0],["Scorton",53.9325,-2.7595,0],["Dolphinholme",53.9763,-2.7356,0],["Bailrigg",54.0172,-2.7877,0],["Pilling",53.9298,-2.9071,0],["Cabus",53.9181,-2.7738,0],["Middleton",54.0215,-2.8803,0],["Garstang",53.9016,-2.7735,1],["Lancaster",54.0488,-2.8013,2],["Heysham",54.0495,-2.8903,1],["Morecambe",54.0721,-2.8651,1],["Fleetwood",53.9246,-3.0076,1],["Thornton",53.8759,-3.0122,1],["Poulton-le-Fylde",53.8461,-2.9905,1],["Cleveleys",53.8782,-3.0429,1],["Carnforth",54.1282,-2.7701,1],["Kirkham",53.7827,-2.8715,1],["Longridge",53.8299,-2.6033,1],["Blackpool",53.8179,-3.051,1],["Preston",53.7593,-2.6993,2],["Penwortham",53.7498,-2.7302,1],["Grange-over-Sands",54.1931,-2.9095,1],["Lytham St Annes",53.7485,-2.9991,1]],
+    'burble:8494': [["North Cove",52.4448,1.6254,0],["Barnby",52.4476,1.6345,0],["Worlingham",52.4514,1.6004,0],["Mutford",52.4359,1.6514,0],["Weston",52.4293,1.5729,0],["Sotterley",52.4059,1.6051,0],["Rushmere",52.4247,1.6667,0],["Willingham St Mary",52.4104,1.5799,0],["Henstead",52.4149,1.6663,0],["Beccles",52.4584,1.5623,1],["Shadingfield",52.3993,1.5766,0],["Carlton Colville",52.4503,1.6908,0],["Gisleham",52.436,1.6971,0],["Aldeby",52.4843,1.6069,0],["Ringsfield",52.4414,1.5362,0],["Lowestoft",52.4766,1.7538,1],["Bungay",52.4562,1.4373,1],["Southwold",52.3261,1.6793,1],["Halesworth",52.3418,1.5002,1],["Loddon",52.535,1.4817,1],["Gorleston-on-Sea",52.5779,1.7273,1],["Great Yarmouth",52.6072,1.7315,1],["Harleston",52.4018,1.2991,1],["Acle",52.6392,1.5481,1],["Caister on Sea",52.6508,1.7238,1],["Leiston",52.2065,1.5764,1],["Saxmundham",52.2143,1.4918,1],["Long Stratton",52.4878,1.2331,1]],
+    'burble:8144': [["Grindale",54.1247,-0.2711,0],["Speeton",54.1543,-0.2396,0],["Bempton",54.1313,-0.1792,0],["Sewerby",54.101,-0.1658,0],["Reighton",54.1623,-0.2722,0],["Bridlington",54.0822,-0.1909,1],["Carnaby",54.0715,-0.2506,0],["Rudston",54.093,-0.3247,0],["Burton Fleming",54.133,-0.3429,0],["Flamborough",54.1155,-0.1244,0],["Hunmanby",54.1804,-0.3225,0],["Burton Agnes",54.0512,-0.3171,0],["Thwing",54.1163,-0.3952,0],["Muston",54.2007,-0.3201,0],["Filey",54.2097,-0.2888,1],["Harpham",54.0396,-0.3338,0],["Driffield",54.005,-0.4391,1],["Scarborough",54.282,-0.4012,1],["Hornsea",53.9135,-0.1689,1]],
+    'burble:2351': [["Almensilla",37.31,-6.1131,0],["Bollullos de la Mitación",37.3399,-6.1377,1],["Benacazón",37.3544,-6.1961,0],["Aznalcázar",37.3035,-6.2508,0],["Umbrete",37.3687,-6.1574,0],["Palomares del Río",37.319,-6.0634,0],["La Puebla del Río",37.2698,-6.0627,1],["Coria del Río",37.2892,-6.0535,1],["Espartinas",37.3815,-6.1257,0],["Mairena del Aljarafe",37.3445,-6.0607,1],["Sanlúcar la Mayor",37.3864,-6.2024,1],["Villanueva del Ariscal",37.3966,-6.1445,0],["Bormujos",37.3716,-6.0713,1],["Pilas",37.3012,-6.3028,1],["Gines",37.3878,-6.0786,1],["Gelves",37.3396,-6.026,1],["San Juan de Aznalfarache",37.36,-6.0329,1],["Tomares",37.3763,-6.0456,1],["Castilleja de la Cuesta",37.3868,-6.0541,1],["Camas",37.402,-6.0332,1],["Seville",37.3886,-5.9953,2],["Dos Hermanas",37.2837,-5.9227,2],["La Algaba",37.4619,-6.0137,1]]
+  };
 
   // Deployed Cloudflare Worker (see worker.js) — reliable CORS proxy for the
   // GoSkydive API and realtime token. Locked to dz.goskydive.com / api.adsb.lol.
@@ -2597,6 +2695,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       var wx = await r.json();
       if (dz !== currentDz()) return;               // dropzone switched mid-request
       weather = wx;
+      scheduleTrackRender();
       renderWeather();
       renderLanding();
     } catch (e) {
@@ -2845,6 +2944,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     lastUpdateTime = null;
     fetchFailed = false;
     weather = null;
+    trackRunIn = null;
+    scheduleTrackRender();
     if (selectedDate !== null) {
       selectedDate = null;
       $datePicker.value = todayStr();
@@ -3014,6 +3115,463 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
         renderLanding();
       });
     }
+  })();
+
+  // --- Tracking plan ---
+  // A tracking group leaves the run-in (jump run) at 90 degrees, left or right.
+  // The plan map shows that on a satellite image; the second picture is the same
+  // imagery re-projected as seen from the exit point at exit height, facing along
+  // the track, so ground features can be picked out as heading references.
+  // Everything is worked in metres east/north of the dropzone's landing point.
+  var TRACK_FALL_MS = 45;          // assumed fall rate in a track, ~100 mph
+  var TRACK_PITCH = 35;            // view camera: degrees below the horizon
+  var TRACK_VFOV = 60;             // view camera: vertical field of view
+  var trackCfg = { open: false, side: 'left', exitAlt: 13000, pullAlt: 4500, glide: 1, offsetKm: 0 };
+  try { Object.assign(trackCfg, JSON.parse(localStorage.getItem('hm_track') || '{}')); } catch (e) {}
+  var trackRunIn = null;           // manual run-in heading; null = auto. Cleared on dropzone switch.
+  var trackTimer = null;
+  var trackTex = { near: null, far: null };
+
+  function saveTrackCfg() { try { localStorage.setItem('hm_track', JSON.stringify(trackCfg)); } catch (e) {} }
+  function bearingVec(b) { var r = b * Math.PI / 180; return { x: Math.sin(r), y: Math.cos(r) }; }
+  function vecBearing(x, y) { return (Math.atan2(x, y) * 180 / Math.PI + 360) % 360; }
+  function pad3(n) { return ('00' + (((Math.round(n) % 360) + 360) % 360)).slice(-3); }
+
+  // Wind profile from the Open-Meteo data already loaded for the weather panel:
+  // the 10 m wind plus each pressure level, as wind-from vectors in knots.
+  function windLevels() {
+    if (!weather || !weather.current) return [];
+    var c = weather.current, h = weather.hourly || {}, out = [];
+    if (c.wind_direction_10m != null) out.push({ alt: 0, dir: c.wind_direction_10m, kt: c.wind_speed_10m || 0 });
+    WX_LEVELS.forEach(function(l) {
+      var gh = (h['geopotential_height_' + l + 'hPa'] || [])[0];
+      var wd = (h['wind_direction_' + l + 'hPa'] || [])[0];
+      var ws = (h['wind_speed_' + l + 'hPa'] || [])[0];
+      if (gh != null && wd != null && ws != null) out.push({ alt: gh * 3.281, dir: wd, kt: ws });
+    });
+    return out.sort(function(a, b) { return a.alt - b.alt; }).map(function(w) {
+      var v = bearingVec(w.dir);
+      return { alt: w.alt, fx: v.x * w.kt, fy: v.y * w.kt };
+    });
+  }
+  function windAt(altFt, levels) {
+    levels = levels || windLevels();
+    if (!levels.length) return null;
+    var lo = levels[0], hi = levels[levels.length - 1];
+    for (var i = 0; i < levels.length - 1; i++) {
+      if (altFt >= levels[i].alt && altFt <= levels[i + 1].alt) { lo = levels[i]; hi = levels[i + 1]; break; }
+    }
+    if (altFt <= levels[0].alt) hi = lo = levels[0];
+    else if (altFt >= levels[levels.length - 1].alt) lo = hi;
+    var f = hi.alt > lo.alt ? (altFt - lo.alt) / (hi.alt - lo.alt) : 0;
+    var fx = lo.fx + (hi.fx - lo.fx) * f, fy = lo.fy + (hi.fy - lo.fy) * f;
+    return { dir: vecBearing(fx, fy), kt: Math.sqrt(fx * fx + fy * fy), fx: fx, fy: fy };
+  }
+  function meanWind(loFt, hiFt) {
+    var levels = windLevels();
+    if (!levels.length) return null;
+    var fx = 0, fy = 0, n = 0;
+    for (var a = loFt; a <= hiFt; a += 500) { var w = windAt(a, levels); fx += w.fx; fy += w.fy; n++; }
+    if (!n) return null;
+    fx /= n; fy /= n;
+    return { dir: vecBearing(fx, fy), kt: Math.sqrt(fx * fx + fy * fy), fx: fx, fy: fy };
+  }
+
+  function trackPlan() {
+    var exitAlt = trackCfg.exitAlt, pullAlt = Math.min(trackCfg.pullAlt, exitAlt - 500);
+    var wExit = windAt(exitAlt);
+    var autoRunIn = (wExit && wExit.kt >= 1) ? (Math.round(wExit.dir / 5) * 5) % 360 : null;
+    var runIn = trackRunIn != null ? trackRunIn : (autoRunIn != null ? autoRunIn : 0);
+    var trackHdg = (runIn + (trackCfg.side === 'left' ? 270 : 90)) % 360;
+    var altLossM = (exitAlt - pullAlt) * 0.3048;
+    var secs = altLossM / TRACK_FALL_MS;
+    var airM = trackCfg.glide * altLossM;
+    var rv = bearingVec(runIn), tv = bearingVec(trackHdg);
+    var exit = { x: rv.x * trackCfg.offsetKm * 1000, y: rv.y * trackCfg.offsetKm * 1000 };
+    var airEnd = { x: exit.x + tv.x * airM, y: exit.y + tv.y * airM };
+    var mw = meanWind(pullAlt, exitAlt);
+    // Wind is quoted by where it comes from, so the drift is the opposite way.
+    var drift = mw ? { x: -mw.fx * 0.5144 * secs, y: -mw.fy * 0.5144 * secs } : { x: 0, y: 0 };
+    var pull = { x: airEnd.x + drift.x, y: airEnd.y + drift.y };
+    return {
+      exitAlt: exitAlt, pullAlt: pullAlt, runIn: runIn, autoRunIn: autoRunIn, isAuto: trackRunIn == null,
+      trackHdg: trackHdg, secs: secs, airM: airM, exit: exit, airEnd: airEnd, pull: pull,
+      driftM: Math.sqrt(drift.x * drift.x + drift.y * drift.y), wExit: wExit, meanWind: mw,
+      groundHdg: vecBearing(pull.x - exit.x, pull.y - exit.y),
+      groundM: Math.sqrt(Math.pow(pull.x - exit.x, 2) + Math.pow(pull.y - exit.y, 2)),
+      pullFromDzM: Math.sqrt(pull.x * pull.x + pull.y * pull.y), pullFromDzBrg: vecBearing(pull.x, pull.y)
+    };
+  }
+
+  // Local metres <-> lat/lon around the dropzone, and an Esri export URL for a
+  // square of ground `half` metres each way around local point (cx, cy).
+  function localToLatLon(x, y) {
+    var dz = currentDz();
+    return { lat: dz.lat + y / 111320, lon: dz.lon + x / (111320 * Math.cos(dz.lat * Math.PI / 180)) };
+  }
+  function latLonToLocal(lat, lon) {
+    var dz = currentDz();
+    return { x: (lon - dz.lon) * 111320 * Math.cos(dz.lat * Math.PI / 180), y: (lat - dz.lat) * 111320 };
+  }
+  function esriSquareUrl(cx, cy, half, px) {
+    var ll = localToLatLon(cx, cy), m = toMerc(ll.lat, ll.lon);
+    var hm = half / Math.cos(ll.lat * Math.PI / 180);   // ground metres -> Mercator metres
+    return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=' +
+      (m.mx - hm) + ',' + (m.my - hm) + ',' + (m.mx + hm) + ',' + (m.my + hm) +
+      '&bboxSR=3857&imageSR=3857&size=' + px + ',' + px + '&format=jpg&f=image';
+  }
+  function dzPlaces() {
+    return (DZ_PLACES[currentDz().key] || []).map(function(p) {
+      var l = latLonToLocal(p[1], p[2]);
+      return { name: p[0], x: l.x, y: l.y, rank: p[3] };
+    });
+  }
+
+  function svgArrowHead(px, py, bearing, size, cls) {
+    var f = bearingVec(bearing), fx = f.x, fy = -f.y, rx = -fy, ry = fx;
+    var tip = [px + fx * size, py + fy * size];
+    var l = [px - fx * size * 0.6 + rx * size * 0.7, py - fy * size * 0.6 + ry * size * 0.7];
+    var r = [px - fx * size * 0.6 - rx * size * 0.7, py - fy * size * 0.6 - ry * size * 0.7];
+    return '<polygon class="' + cls + '" points="' + [tip, l, r].map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '"/>';
+  }
+
+  function renderTrackMap(plan) {
+    var pts = [{ x: 0, y: 0 }, plan.exit, plan.airEnd, plan.pull];
+    var minX = Math.min.apply(null, pts.map(function(p) { return p.x; })), maxX = Math.max.apply(null, pts.map(function(p) { return p.x; }));
+    var minY = Math.min.apply(null, pts.map(function(p) { return p.y; })), maxY = Math.max.apply(null, pts.map(function(p) { return p.y; }));
+    var cx = Math.round((minX + maxX) / 200) * 100, cy = Math.round((minY + maxY) / 200) * 100;
+    var half = Math.max(3000, Math.ceil((Math.max(maxX - minX, maxY - minY) / 2 + 1900) / 250) * 250);
+    var img = document.getElementById('trackMapImg');
+    var src = esriSquareUrl(cx, cy, half, 640);
+    if (img.getAttribute('data-src') !== src) { img.src = src; img.setAttribute('data-src', src); }
+
+    var k = 320 / half;
+    var X = function(p) { return 320 + (p.x - cx) * k; }, Y = function(p) { return 320 - (p.y - cy) * k; };
+    var line = function(a, b, cls) { return '<line class="' + cls + '" x1="' + X(a).toFixed(1) + '" y1="' + Y(a).toFixed(1) + '" x2="' + X(b).toFixed(1) + '" y2="' + Y(b).toFixed(1) + '"/>'; };
+    var text = function(x, y, t, cls, anchor) { return '<text class="' + (cls || 'tm-lbl') + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '"' + (anchor ? ' text-anchor="' + anchor + '"' : '') + '>' + esc(t) + '</text>'; };
+    var rv = bearingVec(plan.runIn), svg = '';
+
+    // Place names first, so the plan lines sit on top of them.
+    var used = [];
+    dzPlaces().filter(function(p) { return Math.abs(p.x - cx) < half * 0.94 && Math.abs(p.y - cy) < half * 0.94; })
+      .sort(function(a, b) { return b.rank - a.rank; }).forEach(function(p) {
+        var px = X(p), py = Y(p);
+        if (used.some(function(u) { return Math.abs(u[0] - px) < 90 && Math.abs(u[1] - py) < 20; })) return;
+        used.push([px, py]);
+        svg += '<circle class="tm-place-dot" cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="3"/>' + text(px + 7, py + 5, p.name, 'tm-place');
+      });
+
+    // Run-in: a long line through the DZ and exit point, arrow just before the exit.
+    var far = half * 3;
+    svg += line({ x: -rv.x * far, y: -rv.y * far }, { x: rv.x * far, y: rv.y * far }, 'tm-runin');
+    var ra = { x: plan.exit.x - rv.x * 1300, y: plan.exit.y - rv.y * 1300 };
+    svg += svgArrowHead(X(ra), Y(ra), plan.runIn, 13, 'tm-runin-head');
+    var side = bearingVec(plan.trackHdg + 180);   // label on the side away from the track
+    svg += text(X(ra) + side.x * 16 - 40, Y(ra) - side.y * 16 + 6, 'RUN-IN ' + pad3(plan.runIn) + '°');
+
+    // Track: dashed = heading flown, solid = expected path over the ground.
+    if (plan.driftM > 80) svg += line(plan.exit, plan.airEnd, 'tm-track-air');
+    svg += line(plan.exit, plan.pull, 'tm-track');
+    svg += svgArrowHead(X(plan.pull), Y(plan.pull), plan.groundHdg, 14, 'tm-track-head');
+    var tv = bearingVec(plan.groundHdg);
+    svg += text(X(plan.pull) + tv.x * 22 - 30, Y(plan.pull) - tv.y * 22 + 6, 'PULL');
+    var mid = { x: (plan.exit.x + plan.airEnd.x) / 2, y: (plan.exit.y + plan.airEnd.y) / 2 };
+    if (plan.airM * k > 120) svg += text(X(mid) + rv.x * 14 - 45, Y(mid) - rv.y * 14 - 8, 'TRACK ' + pad3(plan.trackHdg) + '°');
+
+    svg += '<circle class="tm-dz" cx="' + X({ x: 0, y: 0 }).toFixed(1) + '" cy="' + Y({ x: 0, y: 0 }).toFixed(1) + '" r="9"/>' +
+      text(X({ x: 0, y: 0 }) + 13, Y({ x: 0, y: 0 }) + 20, 'DZ');
+    svg += '<circle class="tm-exit" cx="' + X(plan.exit).toFixed(1) + '" cy="' + Y(plan.exit).toFixed(1) + '" r="6"/>' +
+      text(X(plan.exit) - side.x * -14 + (side.x < 0 ? -48 : 8), Y(plan.exit) - side.y * 14 + 6, 'EXIT');
+
+    // Furniture: north, scale bar, upper wind.
+    svg += text(14, 28, 'N↑');
+    var barM = half > 4000 ? 2000 : 1000, barPx = barM * k;
+    svg += '<line class="tm-scale" x1="16" y1="618" x2="' + (16 + barPx).toFixed(1) + '" y2="618"/>' + text(16, 608, (barM / 1000) + ' km');
+    if (plan.wExit) {
+      var wv = bearingVec(plan.wExit.dir), wc = { x: 580, y: 58 };
+      var t0 = [wc.x + wv.x * 28, wc.y - wv.y * 28], t1 = [wc.x - wv.x * 18, wc.y + wv.y * 18];
+      svg += '<line class="tm-wind" x1="' + t0[0].toFixed(1) + '" y1="' + t0[1].toFixed(1) + '" x2="' + t1[0].toFixed(1) + '" y2="' + t1[1].toFixed(1) + '"/>' +
+        svgArrowHead(t1[0], t1[1], plan.wExit.dir + 180, 10, 'tm-wind-head') +
+        text(626, 112, 'WIND ' + pad3(plan.wExit.dir) + '° ' + Math.round(plan.wExit.kt) + ' kt', 'tm-lbl', 'end');
+    }
+    document.getElementById('trackMapSvg').innerHTML = svg;
+  }
+
+  // Satellite textures for the view: a sharp one for the near ground and a wide
+  // one out to the haze, each with a mip chain so distant ground doesn't sparkle.
+  function loadTrackTex(slot, cx, cy, half, size) {
+    var key = currentDz().key + '|' + cx + '|' + cy + '|' + half;
+    var cur = trackTex[slot];
+    if (cur && cur.key === key) return cur;
+    var tex = { key: key, cx: cx, cy: cy, half: half, levels: null, failed: false };
+    trackTex[slot] = tex;
+    var im = new Image();
+    im.crossOrigin = 'anonymous';
+    im.onload = function() {
+      if (trackTex[slot] !== tex) return;          // superseded while loading
+      try {
+        var levels = [], src = im, size = im.naturalWidth;
+        while (size >= 64) {
+          var c = document.createElement('canvas');
+          c.width = c.height = size;
+          var cx2 = c.getContext('2d', { willReadFrequently: true });
+          cx2.drawImage(src, 0, 0, size, size);
+          levels.push({ size: size, data: cx2.getImageData(0, 0, size, size).data });
+          src = c; size = size >> 1;
+        }
+        tex.levels = levels;
+      } catch (e) { tex.failed = true; }
+      scheduleTrackRender();
+    };
+    im.onerror = function() { if (trackTex[slot] === tex) { tex.failed = true; scheduleTrackRender(); } };
+    im.src = esriSquareUrl(cx, cy, half, size || 2048);
+    return tex;
+  }
+
+  function renderTrackView(plan) {
+    var cv = document.getElementById('trackView'), ctx = cv.getContext('2d');
+    var big = cv.parentNode.classList.contains('expanded');   // full-screen gets a sharper render
+    if (cv.width !== (big ? 1440 : 960)) { cv.width = big ? 1440 : 960; cv.height = big ? 900 : 600; }
+    var W = cv.width, H = cv.height;
+    var h = plan.exitAlt * 0.3048, ex = plan.exit.x, ey = plan.exit.y;
+    // The canvas is scaled to fit by CSS, so on a phone the overlay text is drawn
+    // bigger to stay readable.
+    var cssW = cv.getBoundingClientRect().width || W;
+    var fs = Math.min(2.3, Math.max(1, W * 0.75 / cssW));
+    var px = function(n) { return Math.round(n * fs) + 'px'; };
+
+    // Texture centres snap to a coarse heading/position grid so small changes
+    // to the plan reuse the imagery already downloaded.
+    var snapHdg = Math.round(plan.trackHdg / 30) * 30, sv = bearingVec(snapHdg);
+    var sx = Math.round(ex / 1000) * 1000, sy = Math.round(ey / 1000) * 1000;
+    var near = loadTrackTex('near', Math.round(sx + sv.x * 6000), Math.round(sy + sv.y * 6000), 8000);
+    var far = loadTrackTex('far', Math.round(sx + sv.x * 24000), Math.round(sy + sv.y * 24000), 30000, 1536);
+
+    if (!near.levels || !far.levels) {
+      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#94a3b8'; ctx.font = '600 ' + px(22) + ' "Barlow Condensed", sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText((near.failed || far.failed) ? 'Satellite imagery unavailable' : 'Loading satellite imagery…', W / 2, H / 2);
+      return;
+    }
+
+    var psi = plan.trackHdg * Math.PI / 180, phi = TRACK_PITCH * Math.PI / 180;
+    var P = (H / 2) / Math.tan(TRACK_VFOV * Math.PI / 360);
+    var Fx = Math.sin(psi) * Math.cos(phi), Fy = Math.cos(psi) * Math.cos(phi), Fz = -Math.sin(phi);
+    var Rx = Math.cos(psi), Ry = -Math.sin(psi);
+    var Ux = Math.sin(psi) * Math.sin(phi), Uy = Math.cos(psi) * Math.sin(phi), Uz = Math.cos(phi);
+
+    var image = ctx.createImageData(W, H), out = image.data;
+    var HZ = [203, 216, 228];                       // distance haze / horizon colour
+    var texs = [near, far], o = 0;
+    for (var j = 0; j < H; j++) {
+      var dy = (H / 2 - j - 0.5) / P;
+      for (var i = 0; i < W; i++, o += 4) {
+        var dx = (i + 0.5 - W / 2) / P;
+        var wx = Fx + dx * Rx + dy * Ux, wy = Fy + dx * Ry + dy * Uy, wz = Fz + dy * Uz;
+        var r = HZ[0], g = HZ[1], b = HZ[2];
+        if (wz > -0.004) {                          // at or above the horizon: sky
+          var s = Math.min(1, Math.max(0, (wz + 0.004) * 4));
+          r = HZ[0] - s * 95; g = HZ[1] - s * 62; b = HZ[2] - s * 18;
+        } else {
+          var t = h / -wz, gx = ex + t * wx, gy = ey + t * wy;
+          var hd = t * Math.sqrt(wx * wx + wy * wy);
+          var foot = t * Math.sqrt(wx * wx + wy * wy + wz * wz) / P * 1.4;
+          for (var k = 0; k < 2; k++) {
+            var tx = texs[k], u = (gx - tx.cx) / (2 * tx.half) + 0.5, v = 0.5 - (gy - tx.cy) / (2 * tx.half);
+            if (u < 0.002 || u > 0.998 || v < 0.002 || v > 0.998) continue;
+            var lv = Math.round(Math.log(foot / (2 * tx.half / tx.levels[0].size)) / Math.LN2);
+            lv = lv < 0 ? 0 : lv >= tx.levels.length ? tx.levels.length - 1 : lv;
+            var L = tx.levels[lv], n = L.size, d = L.data;
+            var fu = u * n - 0.5, fv = v * n - 0.5;
+            var x0 = fu < 0 ? 0 : Math.floor(fu), y0 = fv < 0 ? 0 : Math.floor(fv);
+            var x1 = x0 + 1 < n ? x0 + 1 : x0, y1 = y0 + 1 < n ? y0 + 1 : y0;
+            var ax = fu - x0, ay = fv - y0; if (ax < 0) ax = 0; if (ay < 0) ay = 0;
+            var i00 = (y0 * n + x0) * 4, i10 = (y0 * n + x1) * 4, i01 = (y1 * n + x0) * 4, i11 = (y1 * n + x1) * 4;
+            var w00 = (1 - ax) * (1 - ay), w10 = ax * (1 - ay), w01 = (1 - ax) * ay, w11 = ax * ay;
+            r = d[i00] * w00 + d[i10] * w10 + d[i01] * w01 + d[i11] * w11;
+            g = d[i00 + 1] * w00 + d[i10 + 1] * w10 + d[i01 + 1] * w01 + d[i11 + 1] * w11;
+            b = d[i00 + 2] * w00 + d[i10 + 2] * w10 + d[i01 + 2] * w01 + d[i11 + 2] * w11;
+            break;
+          }
+          r = r * 1.14 + 5; g = g * 1.14 + 5; b = b * 1.14 + 5;   // Esri's mosaic is dark at this scale
+          var hz = hd / 70000 + (hd > 14000 ? (hd - 14000) / 30000 : 0);
+          if (hz > 1) hz = 1;
+          r += (HZ[0] - r) * hz; g += (HZ[1] - g) * hz; b += (HZ[2] - b) * hz;
+        }
+        out[o] = r; out[o + 1] = g; out[o + 2] = b; out[o + 3] = 255;
+      }
+    }
+    ctx.putImageData(image, 0, 0);
+
+    var project = function(x, y) {
+      var rx = x - ex, ry = y - ey, zc = rx * Fx + ry * Fy - h * Fz;
+      if (zc < 50) return null;
+      return { x: W / 2 + P * (rx * Rx + ry * Ry) / zc, y: H / 2 - P * (rx * Ux + ry * Uy - h * Uz) / zc, zc: zc };
+    };
+    var halo = function(txt, x, y, font, fill, align) {
+      ctx.font = font; ctx.textAlign = align || 'left'; ctx.lineJoin = 'round';
+      ctx.lineWidth = 4 * fs; ctx.strokeStyle = 'rgba(15,23,42,0.85)'; ctx.strokeText(txt, x, y);
+      ctx.fillStyle = fill; ctx.fillText(txt, x, y);
+    };
+
+    // Heading line laid on the ground along the track, and the expected pull point.
+    var tv = bearingVec(plan.trackHdg), linePts = [];
+    for (var m = 400; m <= 14000; m += 200) {         // runs on past the pull point as a heading reference
+      var pp = project(ex + tv.x * m, ey + tv.y * m);
+      if (pp && pp.y < H + 40) linePts.push(pp);
+    }
+    if (linePts.length > 1) {
+      ctx.beginPath();
+      linePts.forEach(function(p, idx) { if (idx) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y); });
+      ctx.setLineDash([14 * fs, 10 * fs]); ctx.lineWidth = 3 * fs; ctx.strokeStyle = 'rgba(253,224,71,0.75)'; ctx.stroke(); ctx.setLineDash([]);
+    }
+    var pullPt = project(plan.pull.x, plan.pull.y);
+    if (pullPt && pullPt.x > 20 && pullPt.x < W - 20 && pullPt.y > 40 && pullPt.y < H - 10) {
+      ctx.beginPath(); ctx.arc(pullPt.x, pullPt.y, 8 * fs, 0, Math.PI * 2);
+      ctx.fillStyle = '#f97316'; ctx.fill(); ctx.lineWidth = 2.5 * fs; ctx.strokeStyle = 'white'; ctx.stroke();
+      halo('PULL ' + (plan.groundM / 1000).toFixed(1) + ' km', pullPt.x + 14 * fs, pullPt.y + 6 * fs, '700 ' + px(18) + ' "Barlow Condensed", sans-serif', 'white');
+    }
+
+    // Landmarks: towns and villages in view, bigger and nearer first, no overlaps.
+    var boxes = [[W / 2 - 70 * fs, 0, 140 * fs, 76 * fs]];   // keep clear of the TRACK heading label
+    if (pullPt) boxes.push([pullPt.x - 10 * fs, pullPt.y - 20 * fs, 130 * fs, 34 * fs]);
+    dzPlaces().map(function(p) {
+      var s = project(p.x, p.y);
+      return s ? { p: p, s: s, dist: Math.sqrt(Math.pow(p.x - ex, 2) + Math.pow(p.y - ey, 2)) } : null;
+    }).filter(function(q) { return q && q.s.x > 10 && q.s.x < W - 10 && q.s.y > 84 * fs && q.s.y < H - 8 && q.dist < 40000; })
+      .sort(function(a, b) { return (b.p.rank - a.p.rank) || (a.dist - b.dist); })
+      .forEach(function(q) {
+        var label = q.p.name + '  ' + (q.dist / 1000).toFixed(q.dist < 10000 ? 1 : 0) + ' km';
+        var font = (q.p.rank ? '700 ' + px(18) : '600 ' + px(16)) + ' "Barlow Condensed", sans-serif';
+        ctx.font = font;
+        var w = ctx.measureText(label).width, lx = q.s.x - w / 2, ly = q.s.y - 26 * fs;
+        lx = Math.max(6, Math.min(W - w - 6, lx));
+        var box = [lx - 4, ly - 18 * fs, w + 8, 24 * fs];
+        if (boxes.some(function(bx) { return box[0] < bx[0] + bx[2] && box[0] + box[2] > bx[0] && box[1] < bx[1] + bx[3] && box[1] + box[3] > bx[1]; })) return;
+        boxes.push(box);
+        ctx.beginPath(); ctx.moveTo(q.s.x, q.s.y); ctx.lineTo(q.s.x, q.s.y - 22 * fs);
+        ctx.lineWidth = 2 * fs; ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.stroke();
+        ctx.beginPath(); ctx.arc(q.s.x, q.s.y, 3.5 * fs, 0, Math.PI * 2); ctx.fillStyle = 'white'; ctx.fill();
+        halo(label, lx, ly, font, 'white');
+      });
+    var dzPt = project(0, 0);
+    if (dzPt && dzPt.x > 10 && dzPt.x < W - 10 && dzPt.y > 48 && dzPt.y < H - 8) {
+      ctx.beginPath(); ctx.arc(dzPt.x, dzPt.y, 9 * fs, 0, Math.PI * 2); ctx.lineWidth = 3 * fs; ctx.strokeStyle = '#22c55e'; ctx.stroke();
+      halo('DZ', dzPt.x + 13 * fs, dzPt.y + 6 * fs, '700 ' + px(18) + ' "Barlow Condensed", sans-serif', 'white');
+    }
+
+    // Compass strip across the top, centred on the track heading.
+    var sh = 34 * fs;                               // strip height
+    ctx.fillStyle = 'rgba(15,23,42,0.72)'; ctx.fillRect(0, 0, W, sh);
+    var names = { 0: 'N', 45: 'NE', 90: 'E', 135: 'SE', 180: 'S', 225: 'SW', 270: 'W', 315: 'NW' };
+    for (var a = -50; a <= 50; a++) {
+      var brg = ((Math.round(plan.trackHdg) + a) % 360 + 360) % 360;
+      if (brg % 5 || (fs > 1.5 && brg % 15)) continue;
+      var xx = W / 2 + P * Math.tan(a * Math.PI / 180) / Math.cos(phi);   // bearing a, on the horizon
+      if (xx < 0 || xx > W) continue;
+      ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(xx - fs, sh - (brg % 15 ? 7 : 12) * fs, 2 * fs, (brg % 15 ? 7 : 12) * fs);
+      if (brg % (fs > 1.5 ? 30 : 15) === 0 || names[brg]) {
+        ctx.font = '600 ' + px(14) + ' "DM Mono", monospace'; ctx.textAlign = 'center'; ctx.fillStyle = names[brg] ? '#fde047' : 'white';
+        ctx.fillText(names[brg] || pad3(brg), xx, 17 * fs);
+      }
+    }
+    ctx.beginPath(); ctx.moveTo(W / 2 - 9 * fs, sh); ctx.lineTo(W / 2 + 9 * fs, sh); ctx.lineTo(W / 2, sh + 12 * fs); ctx.closePath(); ctx.fillStyle = '#fde047'; ctx.fill();
+    halo('TRACK ' + pad3(plan.trackHdg) + '°', W / 2, 68 * fs, '700 ' + px(20) + ' "Barlow Condensed", sans-serif', '#fde047', 'center');
+    ctx.font = px(11) + ' sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.fillText('Imagery © Esri, Maxar, Earthstar Geographics', W - 8, H - 8);
+  }
+
+  function googleEarthUrl(plan) {
+    // Earth's URL describes a look-at point, the camera's range from it and the tilt.
+    var h = plan.exitAlt * 0.3048, phi = TRACK_PITCH * Math.PI / 180, tv = bearingVec(plan.trackHdg);
+    var ahead = h / Math.tan(phi);
+    var ll = localToLatLon(plan.exit.x + tv.x * ahead, plan.exit.y + tv.y * ahead);
+    return 'https://earth.google.com/web/@' + ll.lat.toFixed(6) + ',' + ll.lon.toFixed(6) + ',0a,' +
+      Math.round(h / Math.sin(phi)) + 'd,' + TRACK_VFOV + 'y,' + Math.round(plan.trackHdg) + 'h,' + (90 - TRACK_PITCH) + 't,0r';
+  }
+
+  function renderTrack() {
+    var panel = document.getElementById('trackPanel');
+    if (!panel || !trackCfg.open) return;
+    var plan = trackPlan();
+    document.getElementById('trackDzName').textContent = currentDz().name;
+    var $run = document.getElementById('trackRunIn');
+    if (document.activeElement !== $run) $run.value = plan.runIn;
+    $run.disabled = plan.isAuto;
+    document.getElementById('trackRunInAuto').checked = plan.isAuto;
+    document.querySelectorAll('#trackPanel .track-seg button').forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-side') === trackCfg.side);
+    });
+
+    renderTrackMap(plan);
+    renderTrackView(plan);
+
+    var km = function(m) { return (m / 1000).toFixed(1) + ' km'; };
+    var html = 'Run-in <b>' + pad3(plan.runIn) + '&deg;</b>' +
+      (plan.isAuto ? (plan.wExit ? ' (auto: into ' + Math.round(plan.wExit.kt) + ' kt from ' + pad3(plan.wExit.dir) + '&deg; at exit height)' : ' (no wind data yet, set it by hand)') : ' (set by hand)') +
+      '. Track <b>' + trackCfg.side.toUpperCase() + '</b> on heading <b>' + pad3(plan.trackHdg) + '&deg; ' + degToCardinal(plan.trackHdg) + '</b>. ' +
+      'About <b>' + km(plan.airM) + '</b> through the air in <b>' + Math.round(plan.secs) + ' s</b> from ' +
+      plan.exitAlt.toLocaleString() + ' to ' + plan.pullAlt.toLocaleString() + ' ft.';
+    if (plan.meanWind && plan.driftM > 80) {
+      html += ' The upper wind (mean ' + Math.round(plan.meanWind.kt) + ' kt from ' + pad3(plan.meanWind.dir) + '&deg;) carries you about <b>' + km(plan.driftM) +
+        '</b>, so expect a ground track near <b>' + pad3(plan.groundHdg) + '&deg;</b> for <b>' + km(plan.groundM) + '</b>.';
+    }
+    html += ' Pull point is <b>' + km(plan.pullFromDzM) + '</b> from the DZ, bearing <b>' + pad3(plan.pullFromDzBrg) + '&deg;</b> from it.';
+    document.getElementById('trackSummary').innerHTML = html;
+    document.getElementById('trackViewCap').textContent = 'View from ' + plan.exitAlt.toLocaleString() + ' ft at the exit point, facing ' + pad3(plan.trackHdg) + '°';
+    document.getElementById('trackNote').innerHTML = 'Flat render of satellite imagery looking ' + TRACK_PITCH + '&deg; below the horizon, no terrain relief. ' +
+      'Assumes a ' + Math.round(TRACK_FALL_MS * 2.237) + ' mph fall rate. <a href="' + googleEarthUrl(plan) + '" target="_blank" rel="noopener">Open this view in Google Earth</a> for full 3D.';
+  }
+  function scheduleTrackRender() {
+    if (trackTimer) clearTimeout(trackTimer);
+    trackTimer = setTimeout(function() { trackTimer = null; renderTrack(); }, 120);
+  }
+
+  (function() {
+    var $btn = document.getElementById('trackBtn'), $panel = document.getElementById('trackPanel');
+    var applyOpen = function() {
+      $panel.classList.toggle('open', !!trackCfg.open);
+      $btn.classList.toggle('active', !!trackCfg.open);
+    };
+    $btn.addEventListener('click', function() { trackCfg.open = !trackCfg.open; saveTrackCfg(); applyOpen(); renderTrack(); });
+    document.querySelectorAll('#trackPanel .track-seg button').forEach(function(b) {
+      b.addEventListener('click', function() { trackCfg.side = b.getAttribute('data-side'); saveTrackCfg(); renderTrack(); });
+    });
+    var bindNum = function(id, prop, lo, hi) {
+      var el = document.getElementById(id);
+      el.value = trackCfg[prop];
+      el.addEventListener('change', function() {
+        var n = parseFloat(el.value);
+        if (isNaN(n)) { el.value = trackCfg[prop]; return; }
+        trackCfg[prop] = Math.min(hi, Math.max(lo, n));
+        el.value = trackCfg[prop];
+        saveTrackCfg();
+        scheduleTrackRender();
+      });
+    };
+    bindNum('trackExitAlt', 'exitAlt', 3000, 25000);
+    bindNum('trackPullAlt', 'pullAlt', 2000, 10000);
+    bindNum('trackGlide', 'glide', 0.3, 3);
+    bindNum('trackOffset', 'offsetKm', -5, 5);
+    var $run = document.getElementById('trackRunIn'), $auto = document.getElementById('trackRunInAuto');
+    $auto.addEventListener('change', function() {
+      trackRunIn = $auto.checked ? null : trackPlan().runIn;
+      renderTrack();
+    });
+    $run.addEventListener('change', function() {
+      var n = parseFloat($run.value);
+      if (isNaN(n)) return;
+      trackRunIn = ((Math.round(n) % 360) + 360) % 360;
+      scheduleTrackRender();
+    });
+    // Tap the view to fill the screen (turn a phone sideways for the biggest picture).
+    var $view = document.querySelector('#trackPanel .track-view');
+    $view.addEventListener('click', function() { $view.classList.toggle('expanded'); scheduleTrackRender(); });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && $view.classList.contains('expanded')) { $view.classList.remove('expanded'); scheduleTrackRender(); }
+    });
+    applyOpen();
+    window.addEventListener('resize', scheduleTrackRender);
   })();
 
   // --- Init ---

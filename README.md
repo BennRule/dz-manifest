@@ -62,6 +62,17 @@ The Burble feed is thinner than GoSkydive: current and upcoming loads only (no l
 
 Add a row to the `DROPZONES` array near the top of the script in `index.html`: `key` (`burble:<dz_id>` or the GoSkydive id), `provider`, `name`, and the `lat`/`lon` of the landing area. The weather panel and the landing-pattern satellite map both centre on that point. Headcorn, Langar, Netheravon, Beccles and Skydive Spain are pinpointed landing areas; the others use the airfield reference point and are flagged `approx: true`, which shows a note under the map.
 
+## Tracking plan
+
+The **Track Plan** button in the filter bar opens a planner for tracking jumps, for whichever dropzone is selected. A tracking group leaves the run-in (jump run) at 90 degrees, left or right.
+
+- **Run-in heading** defaults to into the wind at exit height (from the Open-Meteo winds aloft) and can be set by hand. A hand-set value is dropped when the dropzone changes.
+- **Plan view**: satellite map with the run-in line, exit point, the heading flown (dashed) and the expected path over the ground once the mean upper wind has pushed the group (solid), ending at the pull point.
+- **View from exit height**: the same satellite imagery re-projected as seen from the exit point at exit height, facing along the track, 35 degrees below the horizon, with nearby towns and villages labelled with their distance. It is a flat render with no terrain relief; the link under it opens the same camera in Google Earth for full 3D. Click or tap the view to fill the screen.
+- Track distance is glide ratio x height lost between exit and pull, at an assumed 45 m/s (about 100 mph) fall rate. It is a planning aid, not a spot calculation: the pilot and DZ decide the run-in and exit order.
+
+Landmark names are baked into `DZ_PLACES` in `index.html` (from OpenStreetMap, ODbL) so the planner has no live lookup to fail. When adding a dropzone, add its towns and villages there too, as `[name, lat, lon, rank]` with rank 2 = city, 1 = town, 0 = village.
+
 ## Data Schema
 
 ### Manifest
