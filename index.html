@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Headcorn Manifest</title>
+<title>DZ Manifest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -66,6 +66,23 @@ body {
   text-transform: uppercase;
   white-space: nowrap;
 }
+
+.dz-select {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: var(--slate-700);
+  color: white;
+  border: 1px solid var(--slate-600);
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-left: 14px;
+  max-width: 46vw;
+  cursor: pointer;
+}
+.dz-select:focus { outline: 2px solid var(--slate-400); outline-offset: 1px; }
 
 .header-clock {
   font-family: 'DM Mono', monospace;
@@ -904,6 +921,11 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 .wx-aloft th { text-align: left; color: var(--slate-400); font-weight: 600; font-size: 10px; text-transform: uppercase; padding: 2px 4px; border-bottom: 1px solid var(--slate-100); }
 .wx-aloft td { padding: 3px 4px; color: var(--slate-700); border-bottom: 1px solid var(--slate-50); white-space: nowrap; }
 .wx-muted { color: var(--slate-400); font-size: 12px; }
+.wx-place { font-size: 12px; color: var(--slate-600); margin: -4px 0 8px; }
+.lp-note { font-size: 11px; color: var(--slate-400); text-align: center; margin-top: 4px; }
+.tag-jump { background: var(--slate-100); color: var(--slate-600); }
+.tag-eta { background: #dbeafe; color: #1e40af; }
+.source-note { font-size: 12px; color: var(--slate-400); margin: 0 0 10px; }
 .wx-lp-controls { display: flex; gap: 6px; margin-bottom: 8px; }
 .lp-hand-btn { flex: 1; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 5px; border: 1px solid var(--slate-200); background: white; color: var(--slate-500); border-radius: 5px; cursor: pointer; }
 .lp-hand-btn.active { background: var(--slate-800); color: white; border-color: var(--slate-800); }
@@ -1083,7 +1105,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 
 <!-- Header -->
 <header class="header">
-  <div class="header-title">Headcorn Manifest</div>
+  <div class="header-title" id="headerTitle">DZ Manifest</div>
+  <select class="dz-select" id="dzSelect" aria-label="Dropzone" title="Switch dropzone"></select>
   <div class="header-clock" id="clock">--:--:--</div>
   <div class="header-status">
     <span class="status-dot" id="statusDot"></span>
@@ -1188,15 +1211,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     </div>
     <div class="modal-body">
       <div class="field">
-        <label>Dropzone</label>
-        <select id="settingDz">
-          <option value="dz_0kFFGQXAkk">Headcorn</option>
-          <option value="dz_0dropzone1">Old Sarum</option>
-          <option value="dz_0rU8gA2pHO">Swansea</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>API Key</label>
+        <label>GoSkydive API Key</label>
         <input type="password" id="settingApiKey">
       </div>
       <div class="field">
@@ -1255,9 +1270,31 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   const DEFAULT_PROXY = '';
   const BASE_URL = 'https://dz.goskydive.com';
 
+  // Dropzone registry. `key` is what gets stored in settings: GoSkydive keys are
+  // the API's own dropzone ids, Burble keys are 'burble:<dz_id>' (the dz_id from
+  // the DZ's public board link, .../jmp?dz_id=NNN). lat/lon centre the weather
+  // and the landing-pattern map. Rows without approx are pinpointed landing
+  // areas; approx: true means the airfield reference point, until corrected.
+  const DROPZONES = [
+    { key: 'dz_0kFFGQXAkk', provider: 'goskydive', name: 'Headcorn',      lat: 51.157670, lon: 0.652369 },
+    { key: 'dz_0dropzone1', provider: 'goskydive', name: 'Old Sarum',     lat: 51.098404, lon: -1.784368, approx: true },
+    { key: 'dz_0rU8gA2pHO', provider: 'goskydive', name: 'Swansea',       lat: 51.604227, lon: -4.069261, approx: true },
+    { key: 'burble:531',    provider: 'burble',    name: 'Langar',        lat: 52.890854, lon: -0.905090 },
+    { key: 'burble:398',    provider: 'burble',    name: 'Netheravon',    lat: 51.242798, lon: -1.761904 },
+    { key: 'burble:8154',   provider: 'burble',    name: 'Sibson',        lat: 52.556515, lon: -0.387845, approx: true },
+    { key: 'burble:9134',   provider: 'burble',    name: 'Black Knights', lat: 53.965604, lon: -2.830676, approx: true },
+    { key: 'burble:8494',   provider: 'burble',    name: 'Beccles',       lat: 52.434701, lon: 1.617928 },
+    { key: 'burble:8144',   provider: 'burble',    name: 'Skydive GB',    lat: 54.120700, lon: -0.236500, approx: true },
+    { key: 'burble:2351',   provider: 'burble',    name: 'Skydive Spain', lat: 37.296562, lon: -6.161527 }
+  ];
+  function currentDz() {
+    return DROPZONES.find(function(d) { return d.key === config.dzId; }) || DROPZONES[0];
+  }
+  function isBurble() { return currentDz().provider === 'burble'; }
+
   // Deployed Cloudflare Worker (see worker.js) — reliable CORS proxy for the
   // GoSkydive API and realtime token. Locked to dz.goskydive.com / api.adsb.lol.
-  const WORKER_PROXY = 'https://headcorn-proxy.headcorn-manifest.workers.dev/?url=';
+  const WORKER_PROXY = 'https://dz-manifest-proxy.headcorn-manifest.workers.dev/?url=';
   // Ordered fallback chain tried after the user's Settings override. corsproxy.io
   // is last because its free tier has become unreliable (403s, 200 challenge pages).
   const FALLBACK_PROXIES = [
@@ -1309,7 +1346,6 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   let glideRatio = 3;        // canopy glide ratio (fwd:down), drives the wind-drift model
   let planesMap = {};       // planeId → { registration, planeName, maxWeightInLbs, capacity }
   let aircraftLive = {};    // registration → { alt_baro, gs, baro_rate, lat, lon, on_ground, seen }
-  let dzInfo = null;        // { lat, lon, name } from /dropzones
   let colleagueNames = {};  // colleagueId → fullName (pilots / jump masters), from /colleagues:headers
   let prevManifestStatuses = {};  // manifestId → previous status
 
@@ -1333,7 +1369,6 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   const $lastUpdated = document.getElementById('lastUpdated');
   const $aircraftBar = document.getElementById('aircraftBar');
   const $modal = document.getElementById('settingsModal');
-  const $settingDz = document.getElementById('settingDz');
   const $settingApiKey = document.getElementById('settingApiKey');
   const $settingProxy = document.getElementById('settingProxy');
   const $settingInterval = document.getElementById('settingInterval');
@@ -1419,10 +1454,144 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     throw lastErr || new Error('no proxies configured');
   }
 
+  // --- Burble (public manifest board feed, via the Worker's ?burble= route) ---
+  // The feed only lists current and upcoming loads: no landed loads, no history,
+  // no weather hold and no weights. Each load is normalised to the same outer
+  // shape as a GoSkydive manifest, with the jumpers kept as Burble's own groups.
+  function burbleFeedUrls(dzId) {
+    var seen = {}, out = [];
+    [config.proxy, WORKER_PROXY].forEach(function(p) {
+      p = (p || '').trim();
+      if (!/\?url=$/.test(p)) return;              // only a Worker of ours has the ?burble= route
+      var u = p.replace(/\?url=$/, '?burble=') + encodeURIComponent(dzId);
+      if (!seen[u]) { seen[u] = true; out.push(u); }
+    });
+    return out;
+  }
+
+  var burbleStatusMap = [
+    [/land/i, 'landedComplete'],
+    [/depart|air|flight|took|climb/i, 'airborne'],
+    [/call|board|loading/i, 'trained'],
+    [/.*/, 'candidate']                             // Building / Scheduled / anything else
+  ];
+  function burbleStatus(s) {
+    for (var i = 0; i < burbleStatusMap.length; i++) if (burbleStatusMap[i][0].test(s || '')) return burbleStatusMap[i][1];
+    return 'candidate';
+  }
+  function burbleKind(j) {
+    var t = (j.type || '').toLowerCase();
+    return t.indexOf('tandem') >= 0 ? 'tandem' : t.indexOf('student') >= 0 ? 'student' : 'sport';
+  }
+
+  function normaliseBurbleLoad(l) {
+    var groups = (l.groups || []).map(function(g) {
+      var members = (Array.isArray(g) ? g : [g]).map(function(j) {
+        return {
+          fullName: (j.name || '').trim(),
+          kind: burbleKind(j),
+          jump: (j.jump || '').trim(),
+          option: (j.option_name || '').trim(),
+          formation: (j.formation_type_name || '').trim(),
+          team: (j.team_name || '').trim(),
+          rig: (j.rig_name || '').trim(),
+          handycam: !!(j.handycam_jump && j.handycam_jump !== '0')
+        };
+      }).filter(function(j) { return j.fullName; });
+      var kind = members.some(function(j) { return j.kind === 'tandem'; }) ? 'tandem'
+        : members.some(function(j) { return j.kind === 'student'; }) ? 'student' : 'sport';
+      return { kind: kind, members: members };
+    }).filter(function(g) { return g.members.length; });
+
+    var jumpers = [];
+    groups.forEach(function(g) { jumpers = jumpers.concat(g.members); });
+    var eto = parseInt(l.expected_take_off, 10);
+    var liftMatch = (l.name || '').match(/(\d+)\s*$/);
+    // aircraft_name is often blank; the load name is "<aircraft> <load no.>".
+    var reg = (l.aircraft_name || '').trim() || (l.name || '').replace(/\s*\d+\s*$/, '').trim();
+    return {
+      provider: 'burble',
+      id: 'burble-' + l.id,
+      loadLabel: (l.name || '').trim() || 'Load',
+      liftNumber: liftMatch ? parseInt(liftMatch[1], 10) : null,
+      manifestStatus: burbleStatus(l.status),
+      statusLabel: l.status || '',
+      takeOffDateTime: (l.is_no_time !== '1' && eto > 0) ? new Date(eto * 1000).toISOString() : null,
+      landedDateTime: null,
+      planeId: l.aircraft_id ? 'burble-ac-' + l.aircraft_id : null,
+      aircraftName: reg,
+      planeSlots: parseInt(l.max_slots, 10) || null,
+      passengerSlots: jumpers.length,
+      customerCount: jumpers.length,
+      colleagueCount: 0,
+      isFuelling: l.is_fueling === '1',
+      isTurning: l.is_turning === '1',
+      crew: { lm: l.lm || '', dzso: l.dzso || '', gca: l.gca || '' },
+      groups: groups,
+      jumpers: jumpers,
+      customers: [], colleagues: [], sets: []
+    };
+  }
+
+  async function fetchBurble() {
+    var dz = currentDz();
+    var urls = burbleFeedUrls(dz.key.split(':')[1]);
+    var data = null, lastErr = null;
+    for (var i = 0; i < urls.length && !data; i++) {
+      var ctrl = new AbortController();
+      var timer = setTimeout(function() { ctrl.abort(); }, PROXY_TIMEOUT_MS);
+      try {
+        var res = await fetch(urls[i], { cache: 'no-store', signal: ctrl.signal });
+        if (!res.ok) { lastErr = new Error('HTTP ' + res.status); continue; }
+        var parsed = JSON.parse(await res.text());
+        if (parsed && parsed.success) data = parsed; else lastErr = new Error('Burble feed refused the request');
+      } catch (e) {
+        lastErr = (e && e.name === 'AbortError') ? new Error('proxy timed out') : e;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    if (dz !== currentDz()) return;                 // dropzone switched mid-request
+    if (!data) {
+      fetchFailed = true;
+      setStatus('error', 'Offline');
+      $errorBanner.textContent = 'Couldn\'t reach the ' + dz.name + ' board (' + ((lastErr && lastErr.message) || 'unknown error') +
+        '). Burble dropzones need the Cloudflare Worker proxy with the ?burble= route deployed.';
+      $errorBanner.classList.add('visible');
+      render();
+      return;
+    }
+
+    // Burble pads the board with empty placeholder columns (no id) — drop them.
+    manifests = (data.loads || []).filter(function(l) { return l && !Array.isArray(l) && l.id; }).map(normaliseBurbleLoad);
+
+    // Aircraft: Burble has no plane table, but UK DZs name the aircraft by its
+    // registration, which is all the ADS-B tracking needs.
+    planesMap = {};
+    manifests.forEach(function(m) {
+      if (m.planeId && /^[A-Z0-9]{1,2}-[A-Z0-9]{3,5}$/i.test(m.aircraftName)) {
+        planesMap[m.planeId] = { registration: m.aircraftName.toUpperCase(), planeName: m.aircraftName, capacity: m.planeSlots };
+      }
+    });
+
+    weatherHold = false;
+    wallboardMsg = null;
+    colleagueNames = {};
+    fetchFailed = false;
+    lastUpdateTime = new Date();
+    setStatus('ok', 'Live');
+    render();
+    checkNotifications(manifests);
+    fetchAircraftTracking();
+    updateAircraftPollTimer();
+  }
+
   async function fetchData() {
     setStatus('loading', 'Updating');
     $errorBanner.classList.remove('visible');
+    if (isBurble()) return fetchBurble();
 
+    var reqDz = config.dzId;
     var proxies = proxyChain();
     // The API filters by dropzone_id_eq / manifest_date_eq — a plain dropzone_id
     // is silently ignored and returns an unrelated default set (see the live
@@ -1431,7 +1600,6 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       '&manifest_date_eq=' + activeDate() + '&limit=50&archived_status=active';
     var weatherUrl = BASE_URL + '/calendar/weather-holds?dropzone_id=' + config.dzId + '&date=' + activeDate();
     var planesUrl = BASE_URL + '/planes?dropzone_id=' + config.dzId;
-    var dzUrl = BASE_URL + '/dropzones';
 
     // The manifest call is the critical one — if no proxy in the chain can
     // deliver it, we're genuinely offline (distinct from a quiet dropzone).
@@ -1439,6 +1607,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     try {
       manifestData = await fetchJsonViaProxies(manifestUrl, proxies);
     } catch (err) {
+      if (reqDz !== config.dzId) return;            // dropzone switched mid-request
       fetchFailed = true;
       setStatus('error', 'Offline');
       $errorBanner.textContent = 'Connection failed — tried ' + proxies.length + ' prox' +
@@ -1449,6 +1618,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       return;
     }
 
+    if (reqDz !== config.dzId) return;              // dropzone switched mid-request
     try {
       if (manifestData.message) throw new Error('Manifest API: ' + manifestData.message);
 
@@ -1469,12 +1639,12 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
         : null;
 
       // Secondary calls — tolerant: a failure here shouldn't blank the board.
-      const [weatherData, planesData, dzData, colData] = await Promise.all([
+      const [weatherData, planesData, colData] = await Promise.all([
         fetchJsonViaProxies(weatherUrl, proxies).catch(function() { return {}; }),
         fetchJsonViaProxies(planesUrl, proxies).catch(function() { return null; }),
-        !dzInfo ? fetchJsonViaProxies(dzUrl, proxies).catch(function() { return null; }) : Promise.resolve(null),
         colUrl ? fetchJsonViaProxies(colUrl, proxies).catch(function() { return null; }) : Promise.resolve(null)
       ]);
+      if (reqDz !== config.dzId) return;            // dropzone switched mid-request
 
       // Resolve colleague ids → names for pilot / JM display.
       colleagueNames = {};
@@ -1496,16 +1666,6 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
             };
           }
         });
-      }
-
-      // Build DZ info (once)
-      if (!dzInfo && dzData) {
-        try {
-          var myDz = (dzData.dropzoneCollection || []).find(function(d) { return d.id === config.dzId; });
-          if (myDz) {
-            dzInfo = { lat: myDz.gpsLatitude, lon: myDz.gpsLongitude, name: myDz.dropzoneName };
-          }
-        } catch(e) {}
       }
 
       // Filter planesMap to only aircraft used on this DZ's manifests
@@ -1714,6 +1874,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     var name = config.myName.trim().toLowerCase();
     var found = (m.customers || []).some(function(c) { return c.fullName.toLowerCase() === name; });
     if (!found) found = (m.colleagues || []).some(function(c) { return c.fullName.toLowerCase() === name; });
+    if (!found) found = (m.jumpers || []).some(function(j) { return j.fullName.toLowerCase() === name; });
     return found;
   }
 
@@ -1737,14 +1898,14 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       // Skip if no change or first load
       if (!prevStatus || prevStatus === newStatus) return;
 
-      var liftLabel = m.liftNumber != null ? 'Lift #' + m.liftNumber : 'Unscheduled';
+      var liftLabel = m.loadLabel || (m.liftNumber != null ? 'Lift #' + m.liftNumber : 'Unscheduled');
       var onMyLoad = config.notifyAll || isOnManifest(m);
 
       if (!onMyLoad) return;
 
       // Kit On notification
       if (config.notifyKitOn && newStatus === 'trained' && prevStatus !== 'trained') {
-        fireNotification('🟡 KIT ON — ' + liftLabel, 'Your load is kitting up! Get to the manifest area.');
+        fireNotification('🟡 ' + (m.provider === 'burble' ? (m.statusLabel || 'ON CALL').toUpperCase() : 'KIT ON') + ' — ' + liftLabel, 'Your load is kitting up! Get to the manifest area.');
       }
 
       // Airborne notification
@@ -1787,6 +1948,10 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       });
       (m.colleagues || []).forEach(function(c) {
         if (c.colleagueRole === 'sportsSolo') sports++;
+      });
+      (m.groups || []).forEach(function(g) {           // Burble loads
+        if (g.kind === 'tandem') tandems++;
+        else if (g.kind === 'sport') sports += g.members.length;
       });
     });
     $metricsAirborne.textContent = airborne;
@@ -1933,6 +2098,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   }
 
   function hasSportsJumpers(m) {
+    if ((m.groups || []).some(function(g) { return g.kind === 'sport'; })) return true;
     var hasSportCol = (m.colleagues || []).some(function(c) { return c.colleagueRole === 'sportsSolo'; });
     var hasSportCust = (m.customers || []).some(function(c) { return c.customerRole === 'sports'; });
     return hasSportCol || hasSportCust;
@@ -1963,7 +2129,9 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
         msg = 'Connection failed — couldn\'t reach the manifest service. Check the proxy in Settings.';
       } else if (manifests.length === 0) {
         // Connected, but nothing on the manifest at all for this day.
-        msg = selectedDate ? 'No loads on the manifest for ' + fmtDateLabel(selectedDate) : 'No loads on the manifest today';
+        msg = selectedDate ? 'No loads on the manifest for ' + fmtDateLabel(selectedDate)
+          : isBurble() ? 'No loads on the ' + esc(currentDz().name) + ' board right now'
+          : 'No loads on the manifest today';
       } else if (viewFilter === 'active') {
         // Connected with loads, just none currently active.
         msg = 'No active loads — switch to "All Loads" to see landed lifts';
@@ -2212,6 +2380,39 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
         affHtml += '</div>'; // close aff-section
       }
 
+      // Burble loads carry their jumpers as groups (people exiting together),
+      // with a free-text jump code per person rather than roles/sets.
+      if (m.provider === 'burble') {
+        var kindLabels = { sport: 'Sports', student: 'Students', tandem: 'Tandems' };
+        var kindClass = { sport: 'sport', student: 'aff', tandem: 'tandem' };
+        ['sport', 'student', 'tandem'].forEach(function(kind) {
+          var gs = m.groups.filter(function(g) { return g.kind === kind; });
+          if (!gs.length) return;
+          var count = kind === 'tandem' ? gs.length : gs.reduce(function(n, g) { return n + g.members.length; }, 0);
+          var html = '<div class="section-label">' + kindLabels[kind] + ' (' + count + ')</div>';
+          gs.forEach(function(g) {
+            var rows = g.members.map(function(j) {
+              var tags = '';
+              if (j.jump) tags += '<span class="tag tag-jump">' + esc(j.jump) + '</span>';
+              if (j.option) tags += '<span class="tag tag-alt">' + esc(j.option) + '</span>';
+              if (j.handycam) tags += '<span class="tag tag-hc">HC</span>';
+              if (j.rig) tags += '<span class="tag tag-own" title="Rig">' + esc(j.rig) + '</span>';
+              var c = kindClass[kind];
+              var nameClass = c === 'tandem' ? 'tandem-customer' : c + '-name';
+              return '<div class="' + c + '-row"><div class="' + c + '-info"><div class="' + nameClass + '">' + esc(j.fullName) + '</div></div>' +
+                '<div class="' + c + '-tags">' + tags + '</div></div>';
+            }).join('');
+            var label = g.members[0].team || g.members[0].formation || (g.members.length > 1 ? g.members.length + '-way' : '');
+            html += (g.members.length > 1 || label)
+              ? '<div class="team-group">' + (label ? '<div class="team-group-name">' + esc(label) + '</div>' : '') + rows + '</div>'
+              : rows;
+          });
+          if (kind === 'sport') sportsHtml = '<div class="sports-section">' + html + '</div>';
+          else if (kind === 'student') affHtml = '<div class="aff-section">' + html + '</div>';
+          else tandemHtml = html;
+        });
+      }
+
       // In sports-only mode, hide tandems and AFF
       if (viewFilter === 'sports') { tandemHtml = ''; affHtml = ''; }
 
@@ -2220,6 +2421,13 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       // Plane info for this load
       var planeInfo = m.planeId && planesMap[m.planeId] ? planesMap[m.planeId] : null;
       var planeReg = planeInfo ? planeInfo.registration : null;
+      if (m.provider === 'burble') {
+        statusLabel = m.statusLabel || statusLabel;
+        if (takeoff && m.manifestStatus !== 'airborne') {
+          var minsTo = Math.round((new Date(m.takeOffDateTime).getTime() - Date.now()) / 60000);
+          timeStr = 'ETD ' + takeoff + (minsTo >= 0 && minsTo < 600 ? ' &middot; ' + minsTo + ' min' : '');
+        }
+      }
       var planeRegHtml = planeReg ? '<a class="card-plane-reg" href="https://uk.flightaware.com/live/flight/' + encodeURIComponent(planeReg) + '" target="_blank" rel="noopener" title="Flight history on FlightAware">' + esc(planeReg) + '</a>' : '';
 
       // Live altitude — only show if this manifest is airborne
@@ -2275,6 +2483,11 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       var crewBits = [];
       if (pilotName) crewBits.push('<span class="crew-role">Pilot</span> ' + esc(pilotName) + (coPilotName ? ' &amp; ' + esc(coPilotName) : ''));
       if (jmName) crewBits.push('<span class="crew-role">JM</span> ' + esc(jmName));
+      if (m.crew) {
+        if (m.crew.lm) crewBits.push('<span class="crew-role">LM</span> ' + esc(m.crew.lm));
+        if (m.crew.dzso) crewBits.push('<span class="crew-role">DZSO</span> ' + esc(m.crew.dzso));
+        if (m.crew.gca) crewBits.push('<span class="crew-role">GCA</span> ' + esc(m.crew.gca));
+      }
       var crewHtml = crewBits.length ? '<div class="card-crew">' + crewBits.join('<span class="crew-sep">&bull;</span>') + '</div>' : '';
 
       // Setup requirements / approval notes as a compact info line.
@@ -2287,11 +2500,13 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       var eventSet = {};
       sets.forEach(function(s) { if (s.specialEvent) eventSet[s.specialEvent] = 1; });
       var eventHtml = Object.keys(eventSet).map(function(e) { return '<span class="tag tag-event">' + esc(e) + '</span>'; }).join('');
+      if (m.isFuelling) eventHtml += '<span class="tag tag-eta">Fuelling</span>';
+      if (m.isTurning) eventHtml += '<span class="tag tag-eta">Turning</span>';
 
       return '<div class="load-card' + (isCancelled ? ' cancelled' : '') + '" data-status="' + cardStatus + '">' +
         '<div class="card-header">' +
-          '<span class="lift-number">' + (m.liftNumber != null ? 'Lift #' + m.liftNumber : 'Unscheduled') + '</span>' +
-          planeRegHtml +
+          '<span class="lift-number">' + (m.loadLabel ? esc(m.loadLabel) : m.liftNumber != null ? 'Lift #' + m.liftNumber : 'Unscheduled') + '</span>' +
+          (m.loadLabel && planeReg && m.loadLabel.toUpperCase().indexOf(planeReg) >= 0 ? '' : planeRegHtml) +
           '<span class="status-badge ' + cardStatus + '">' + (isCancelled ? 'Cancelled' : statusLabel) + '</span>' +
           eventHtml +
           liveAltHtml +
@@ -2316,6 +2531,13 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       if (m.manifestStatus === 'draft' || m.manifestStatus === 'landedComplete') return;
       var customers = m.customers || [];
       var sets = m.sets || [];
+      (m.groups || []).forEach(function(g) {
+        if (g.kind !== 'tandem') return;
+        var pax = g.members.filter(function(j) { return !/^(ti|tm|t\/i|cam|camera|video|vid|instructor)\b/i.test(j.jump); });
+        (pax.length ? pax : g.members.slice(0, 1)).forEach(function(j) {
+          items.push({ name: j.fullName, hc: g.members.some(function(x) { return x.handycam; }), ff: false });
+        });
+      });
       customers.forEach(function(c) {
         if (c.customerRole !== 'tandem') return;
         var custSet = sets.find(function(s) { return s.eid === c.setEid; });
@@ -2359,8 +2581,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   }
 
   async function fetchWeather() {
-    var lat = (dzInfo && dzInfo.lat) || 51.156;
-    var lon = (dzInfo && dzInfo.lon) || 0.641;
+    var dz = currentDz();
+    var lat = dz.lat, lon = dz.lon;
     var fields = [];
     ['wind_speed', 'wind_direction', 'temperature', 'geopotential_height'].forEach(function(f) {
       WX_LEVELS.forEach(function(l) { fields.push(f + '_' + l + 'hPa'); });
@@ -2372,7 +2594,9 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     try {
       var r = await fetch(url);
       if (!r.ok) throw new Error('wx ' + r.status);
-      weather = await r.json();
+      var wx = await r.json();
+      if (dz !== currentDz()) return;               // dropzone switched mid-request
+      weather = wx;
       renderWeather();
       renderLanding();
     } catch (e) {
@@ -2391,7 +2615,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       ? Math.round(c.wind_direction_10m) + '&deg; ' + degToCardinal(c.wind_direction_10m) + ' &middot; ' + mph(c.wind_speed_10m || 0) + ' mph' +
         (c.wind_gusts_10m ? ' <span class="wx-muted">G' + mph(c.wind_gusts_10m) + '</span>' : '')
       : '&mdash;';
-    var html = '<div class="wx-row"><span class="wx-lbl">Ground wind</span><span class="wx-val">' + gWind + '</span></div>' +
+    var html = '<div class="wx-place">' + esc(currentDz().name) + '</div>' +
+      '<div class="wx-row"><span class="wx-lbl">Ground wind</span><span class="wx-val">' + gWind + '</span></div>' +
       '<div class="wx-row"><span class="wx-lbl">Ground temp</span><span class="wx-val">' +
         (c.temperature_2m != null ? Math.round(c.temperature_2m) + '&deg;C' : '&mdash;') + '</span></div>';
 
@@ -2416,11 +2641,11 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   // a square Web-Mercator export centred on the chosen landing point.
   var LP_HALF = 1000; // Mercator metres each way (wider view fits the glide-ratio pattern)
 
-  // Headcorn's actual skydiving landing area (not the aerodrome centre the API
-  // reports). Fixed — the map is not tap-movable.
-  var DEFAULT_LANDING = { lat: 51.157670, lon: 0.652369 };
+  // Landing spot for the selected dropzone, from the DROPZONES registry.
+  // Fixed — the map is not tap-movable.
   function getLandingCoords() {
-    return DEFAULT_LANDING;
+    var dz = currentDz();
+    return { lat: dz.lat, lon: dz.lon };
   }
   function toMerc(lat, lon) {
     var R = 6378137;
@@ -2445,7 +2670,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     if (!host.querySelector('.lp-map')) {
       host.innerHTML = '<div class="lp-map" id="lpMap"><img class="lp-map-bg" id="lpMapImg" alt="Airfield">' +
         '<svg class="lp-overlay" id="lpSvg" viewBox="0 0 280 280"></svg></div>' +
-        '<div class="lp-caption" id="lpCaption"></div>';
+        '<div class="lp-caption" id="lpCaption"></div><div class="lp-note" id="lpNote"></div>';
     }
     var img = document.getElementById('lpMapImg');
     var src = satUrl();
@@ -2504,6 +2729,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       '<circle cx="140" cy="140" r="5" class="lp-target"/>' +
       '<line x1="' + wTail[0] + '" y1="' + wTail[1] + '" x2="' + wHead[0] + '" y2="' + wHead[1] + '" class="lp-wind" marker-end="url(#lpWind)"/>';
     document.getElementById('lpSvg').innerHTML = svg;
+    document.getElementById('lpNote').textContent = currentDz().approx
+      ? 'Map centred on the ' + currentDz().name + ' airfield, not a surveyed landing area' : '';
     document.getElementById('lpCaption').innerHTML = 'Land into wind &mdash; heading <b>' + pad(landHdg) + '&deg;</b><br>' +
       'Wind from ' + degToCardinal(windFrom) + ' (' + pad(Math.round(windFrom)) + '&deg;) at ' + spd + ' mph';
   }
@@ -2542,6 +2769,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 
   async function startRealtime() {
     stopRealtime();
+    if (isBurble()) return;                          // Burble has no push channel — polling only
     var proxies = proxyChain();
     var tokenData;
     try {
@@ -2589,6 +2817,61 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     }
   }
 
+  // --- Dropzone selector ---
+  var $dzSelect = document.getElementById('dzSelect');
+
+  function applyDzChrome() {
+    var dz = currentDz();
+    $dzSelect.value = dz.key;
+    document.title = dz.name + ' · DZ Manifest';
+    // Burble's board has no history, so the date picker only applies to GoSkydive.
+    document.getElementById('prevDaysBtn').style.display = isBurble() ? 'none' : '';
+  }
+
+  function switchDropzone(key) {
+    if (key === config.dzId) return;
+    config.dzId = key;
+    saveConfig(config);
+
+    // Drop everything that belonged to the previous dropzone.
+    if (aircraftPollTimer) { clearInterval(aircraftPollTimer); aircraftPollTimer = null; }
+    manifests = [];
+    planesMap = {};
+    aircraftLive = {};
+    colleagueNames = {};
+    prevManifestStatuses = {};
+    weatherHold = false;
+    wallboardMsg = null;
+    lastUpdateTime = null;
+    fetchFailed = false;
+    weather = null;
+    if (selectedDate !== null) {
+      selectedDate = null;
+      $datePicker.value = todayStr();
+      $historyLabel.style.display = 'none';
+      $todayBtn.style.display = 'none';
+      $prevDaysBtn.classList.remove('active');
+    }
+    applyDzChrome();
+    applyFilter('active');
+    $loadsGrid.innerHTML = '<div class="empty-state">Loading manifest data&hellip;</div>';
+    $lastUpdated.textContent = '';
+    render();
+    renderWeather();
+    document.getElementById('wxLanding').innerHTML = '<div class="wx-muted">&hellip;</div>';
+
+    startPolling();
+    fetchWeather();
+  }
+
+  DROPZONES.forEach(function(d) {
+    var o = document.createElement('option');
+    o.value = d.key;
+    o.textContent = d.name;
+    $dzSelect.appendChild(o);
+  });
+  $dzSelect.addEventListener('change', function() { switchDropzone($dzSelect.value); });
+
   function startPolling() {
     if (pollTimer) clearInterval(pollTimer);
     fetchData();
@@ -2598,7 +2881,6 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 
   // --- Settings ---
   $settingsBtn.addEventListener('click', function() {
-    $settingDz.value = config.dzId;
     $settingApiKey.value = config.apiKey;
     $settingProxy.value = config.proxy;
     $settingInterval.value = config.interval;
@@ -2619,7 +2901,6 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   });
 
   document.getElementById('settingsSave').addEventListener('click', function() {
-    config.dzId = $settingDz.value;
     config.apiKey = $settingApiKey.value;
     config.proxy = $settingProxy.value;
     config.interval = Math.max(5, parseInt($settingInterval.value, 10) || DEFAULT_INTERVAL);
@@ -2736,6 +3017,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   })();
 
   // --- Init ---
+  if (config.dzId !== currentDz().key) config.dzId = currentDz().key; // unknown saved id → default
+  applyDzChrome();
   startPolling();
   fetchWeather();
   weatherTimer = setInterval(fetchWeather, 600000); // refresh weather every 10 min

@@ -1,6 +1,6 @@
-# Headcorn Manifest
+# DZ Manifest
 
-Live manifest display for Headcorn dropzone, powered by the GoSkydive API. A single-page web app with no build step, designed for ops screens and wallboards.
+Live skydiving manifest display for multiple dropzones, picked from a selector in the header. Headcorn, Old Sarum and Swansea come from the GoSkydive API; the rest come from Burble public boards. Formerly Headcorn Manifest. A single-page web app with no build step, designed for ops screens and wallboards.
 
 ## Deployment
 
@@ -41,6 +41,26 @@ Both endpoints are polled every 30 seconds (configurable in settings).
 | Headcorn | `dz_0kFFGQXAkk` |
 | Old Sarum | `dz_0dropzone1` |
 | Swansea | `dz_0rU8gA2pHO` |
+
+## Burble dropzones
+
+Dropzones that run Burble DZM and have their public board switched on (`https://dzm.burblesoft.com/jmp?dz_id=NNN`) can be shown too. The board's JSON feed needs a session cookie and a POST, so it only works through the Cloudflare Worker's `?burble=<dz_id>` route (see `worker.js`), not the generic fallback proxies. Redeploy the Worker (`npx wrangler deploy`) after changing it.
+
+| Dropzone | Burble `dz_id` |
+|---|---|
+| Langar | 531 |
+| Netheravon | 398 |
+| Sibson | 8154 |
+| Black Knights | 9134 |
+| Beccles | 8494 |
+| Skydive GB | 8144 |
+| Skydive Spain | 2351 |
+
+The Burble feed is thinner than GoSkydive: current and upcoming loads only (no landed loads or history), load status, expected take-off, slots, LM/DZSO/GCA, and jumpers in their exit groups with a free-text jump code. No weights, licences, notes, weather hold or realtime push, so those parts of the board stay empty and it polls on the refresh interval.
+
+### Adding a dropzone
+
+Add a row to the `DROPZONES` array near the top of the script in `index.html`: `key` (`burble:<dz_id>` or the GoSkydive id), `provider`, `name`, and the `lat`/`lon` of the landing area. The weather panel and the landing-pattern satellite map both centre on that point. Headcorn, Langar, Netheravon, Beccles and Skydive Spain are pinpointed landing areas; the others use the airfield reference point and are flagged `approx: true`, which shows a note under the map.
 
 ## Data Schema
 
@@ -116,8 +136,9 @@ Customers, colleagues, and sets are linked by `setEid`. A tandem customer shares
 
 ## Settings
 
+The dropzone is chosen from the selector in the header and remembered in `localStorage`.
+
 Click the cog icon to configure:
-- **Dropzone** — switch between Headcorn, Old Sarum, and Swansea
 - **API Key** — Base64-encoded Basic auth credentials
 - **Refresh interval** — polling frequency in seconds (default 30)
 
