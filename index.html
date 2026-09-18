@@ -932,9 +932,14 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 .track-map img, .track-map svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .track-map img { object-fit: cover; }
 .track-view { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--slate-200); background: #0f172a; }
-.track-view canvas { display: block; width: 100%; height: auto; cursor: zoom-in; }
+.track-view canvas { display: block; width: 100%; height: auto; cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.track-view canvas.dragging { cursor: grabbing; }
+.track-view.expanded canvas { touch-action: none; }
+.track-tools { position: absolute; left: 8px; bottom: 8px; display: flex; gap: 6px; z-index: 2; }
+.track-tools button { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; min-width: 34px; height: 34px; padding: 0 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.35); background: rgba(15,23,42,0.72); color: white; cursor: pointer; }
+.track-tools button:hover { background: rgba(15,23,42,0.92); }
 .track-view.expanded { position: fixed; inset: 0; z-index: 1000; border: 0; border-radius: 0; display: flex; align-items: center; justify-content: center; background: #020617; }
-.track-view.expanded canvas { width: min(100vw, 160vh); height: auto; cursor: zoom-out; }
+.track-view.expanded canvas { width: min(100vw, 160vh); height: auto; }
 .track-figcap { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); margin-bottom: 6px; }
 .track-summary { font-size: 13px; color: var(--slate-700); margin-top: 12px; line-height: 1.5; }
 .track-summary b { color: var(--slate-900); font-family: 'DM Mono', monospace; font-weight: 500; }
@@ -1247,7 +1252,15 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     </div>
     <div>
       <div class="track-figcap" id="trackViewCap">View from exit height along the track</div>
-      <div class="track-view" title="Click to enlarge"><canvas id="trackView" width="960" height="600"></canvas></div>
+      <div class="track-view">
+        <canvas id="trackView" width="960" height="600"></canvas>
+        <div class="track-tools">
+          <button type="button" data-tool="in" title="Zoom in">+</button>
+          <button type="button" data-tool="out" title="Zoom out">&minus;</button>
+          <button type="button" data-tool="reset" title="Face along the track again">Reset</button>
+          <button type="button" data-tool="full" title="Fill the screen">Full screen</button>
+        </div>
+      </div>
     </div>
   </div>
   <div class="track-summary" id="trackSummary"></div>
@@ -3130,7 +3143,13 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   try { Object.assign(trackCfg, JSON.parse(localStorage.getItem('hm_track') || '{}')); } catch (e) {}
   var trackRunIn = null;           // manual run-in heading; null = auto. Cleared on dropzone switch.
   var trackTimer = null;
-  var trackTex = { near: null, far: null };
+  var trackTex = { near: null, mid: null, far: null };
+  // Look-around camera for the view: yaw is relative to the track heading, so
+  // the default always faces along the track. Reset whenever that heading changes.
+  var trackCam = { yaw: 0, pitch: TRACK_PITCH, fov: TRACK_VFOV, forHdg: null };
+  var trackLastPlan = null;
+  var trackDragging = false;       // true while the view is being dragged/zoomed: draw fast, not sharp
+  function resetTrackCam() { trackCam.yaw = 0; trackCam.pitch = TRACK_PITCH; trackCam.fov = TRACK_VFOV; }
 
   function saveTrackCfg() { try { localStorage.setItem('hm_track', JSON.stringify(trackCfg)); } catch (e) {} }
   function bearingVec(b) { var r = b * Math.PI / 180; return { x: Math.sin(r), y: Math.cos(r) }; }
@@ -3329,6 +3348,9 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   }
 
   function renderTrackView(plan) {
+    trackLastPlan = plan;
+    if (trackCam.forHdg !== plan.trackHdg) { resetTrackCam(); trackCam.forHdg = plan.trackHdg; }
+    var viewHdg = ((plan.trackHdg + trackCam.yaw) % 360 + 360) % 360;
     var cv = document.getElementById('trackView'), ctx = cv.getContext('2d');
     var big = cv.parentNode.classList.contains('expanded');   // full-screen gets a sharper render
     if (cv.width !== (big ? 1440 : 960)) { cv.width = big ? 1440 : 960; cv.height = big ? 900 : 600; }
@@ -3340,33 +3362,36 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     var fs = Math.min(2.3, Math.max(1, W * 0.75 / cssW));
     var px = function(n) { return Math.round(n * fs) + 'px'; };
 
-    // Texture centres snap to a coarse heading/position grid so small changes
-    // to the plan reuse the imagery already downloaded.
-    var snapHdg = Math.round(plan.trackHdg / 30) * 30, sv = bearingVec(snapHdg);
+    // Three squares of imagery centred on the exit point (snapped to 1 km so small
+    // plan changes reuse them): all-round cover, so the view can be turned any way.
     var sx = Math.round(ex / 1000) * 1000, sy = Math.round(ey / 1000) * 1000;
-    var near = loadTrackTex('near', Math.round(sx + sv.x * 6000), Math.round(sy + sv.y * 6000), 8000);
-    var far = loadTrackTex('far', Math.round(sx + sv.x * 24000), Math.round(sy + sv.y * 24000), 30000, 1536);
+    var near = loadTrackTex('near', sx, sy, 5000);
+    var mid = loadTrackTex('mid', sx, sy, 12000);
+    var far = loadTrackTex('far', sx, sy, 40000, 1536);
 
-    if (!near.levels || !far.levels) {
+    // Draw with whatever has arrived so far; the wide square usually lands first.
+    var texs = [near, mid, far].filter(function(t) { return t.levels; });
+    var stillLoading = texs.length < 3 && ![near, mid, far].some(function(t) { return t.failed; });
+    if (!texs.length) {
       ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#94a3b8'; ctx.font = '600 ' + px(22) + ' "Barlow Condensed", sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText((near.failed || far.failed) ? 'Satellite imagery unavailable' : 'Loading satellite imagery…', W / 2, H / 2);
+      ctx.fillText((near.failed || mid.failed || far.failed) ? 'Satellite imagery unavailable' : 'Loading satellite imagery…', W / 2, H / 2);
       return;
     }
 
-    var psi = plan.trackHdg * Math.PI / 180, phi = TRACK_PITCH * Math.PI / 180;
-    var P = (H / 2) / Math.tan(TRACK_VFOV * Math.PI / 360);
+    var psi = viewHdg * Math.PI / 180, phi = trackCam.pitch * Math.PI / 180;
+    var P = (H / 2) / Math.tan(trackCam.fov * Math.PI / 360);
     var Fx = Math.sin(psi) * Math.cos(phi), Fy = Math.cos(psi) * Math.cos(phi), Fz = -Math.sin(phi);
     var Rx = Math.cos(psi), Ry = -Math.sin(psi);
     var Ux = Math.sin(psi) * Math.sin(phi), Uy = Math.cos(psi) * Math.sin(phi), Uz = Math.cos(phi);
 
     var image = ctx.createImageData(W, H), out = image.data;
     var HZ = [203, 216, 228];                       // distance haze / horizon colour
-    var texs = [near, far], o = 0;
-    for (var j = 0; j < H; j++) {
-      var dy = (H / 2 - j - 0.5) / P;
-      for (var i = 0; i < W; i++, o += 4) {
-        var dx = (i + 0.5 - W / 2) / P;
+    var step = trackDragging ? (big ? 4 : 3) : 1;   // coarse blocks while dragging keep it responsive
+    for (var j = 0; j < H; j += step) {
+      var dy = (H / 2 - j - step / 2) / P;
+      for (var i = 0; i < W; i += step) {
+        var dx = (i + step / 2 - W / 2) / P;
         var wx = Fx + dx * Rx + dy * Ux, wy = Fy + dx * Ry + dy * Uy, wz = Fz + dy * Uz;
         var r = HZ[0], g = HZ[1], b = HZ[2];
         if (wz > -0.004) {                          // at or above the horizon: sky
@@ -3375,8 +3400,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
         } else {
           var t = h / -wz, gx = ex + t * wx, gy = ey + t * wy;
           var hd = t * Math.sqrt(wx * wx + wy * wy);
-          var foot = t * Math.sqrt(wx * wx + wy * wy + wz * wz) / P * 1.4;
-          for (var k = 0; k < 2; k++) {
+          var foot = t * Math.sqrt(wx * wx + wy * wy + wz * wz) / P * 1.4 * step;
+          for (var k = 0; k < texs.length; k++) {
             var tx = texs[k], u = (gx - tx.cx) / (2 * tx.half) + 0.5, v = 0.5 - (gy - tx.cy) / (2 * tx.half);
             if (u < 0.002 || u > 0.998 || v < 0.002 || v > 0.998) continue;
             var lv = Math.round(Math.log(foot / (2 * tx.half / tx.levels[0].size)) / Math.LN2);
@@ -3398,7 +3423,10 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
           if (hz > 1) hz = 1;
           r += (HZ[0] - r) * hz; g += (HZ[1] - g) * hz; b += (HZ[2] - b) * hz;
         }
-        out[o] = r; out[o + 1] = g; out[o + 2] = b; out[o + 3] = 255;
+        for (var bj = j; bj < j + step && bj < H; bj++) {
+          var o = (bj * W + i) * 4;
+          for (var bi = i; bi < i + step && bi < W; bi++, o += 4) { out[o] = r; out[o + 1] = g; out[o + 2] = b; out[o + 3] = 255; }
+        }
       }
     }
     ctx.putImageData(image, 0, 0);
@@ -3433,7 +3461,8 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     }
 
     // Landmarks: towns and villages in view, bigger and nearer first, no overlaps.
-    var boxes = [[W / 2 - 70 * fs, 0, 140 * fs, 76 * fs]];   // keep clear of the TRACK heading label
+    var capHalf = (Math.abs(trackCam.yaw) > 0.5 ? 190 : 70) * fs;
+    var boxes = [[W / 2 - capHalf, 0, capHalf * 2, 76 * fs]];   // keep clear of the heading caption
     if (pullPt) boxes.push([pullPt.x - 10 * fs, pullPt.y - 20 * fs, 130 * fs, 34 * fs]);
     dzPlaces().map(function(p) {
       var s = project(p.x, p.y);
@@ -3464,30 +3493,42 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     var sh = 34 * fs;                               // strip height
     ctx.fillStyle = 'rgba(15,23,42,0.72)'; ctx.fillRect(0, 0, W, sh);
     var names = { 0: 'N', 45: 'NE', 90: 'E', 135: 'SE', 180: 'S', 225: 'SW', 270: 'W', 315: 'NW' };
-    for (var a = -50; a <= 50; a++) {
-      var brg = ((Math.round(plan.trackHdg) + a) % 360 + 360) % 360;
+    var stripX = function(a) { return Math.abs(a) > 85 ? null : W / 2 + P * Math.tan(a * Math.PI / 180) / Math.cos(phi); };
+    for (var a = -85; a <= 85; a++) {
+      var brg = ((Math.round(viewHdg) + a) % 360 + 360) % 360;
       if (brg % 5 || (fs > 1.5 && brg % 15)) continue;
-      var xx = W / 2 + P * Math.tan(a * Math.PI / 180) / Math.cos(phi);   // bearing a, on the horizon
-      if (xx < 0 || xx > W) continue;
+      var xx = stripX(a + Math.round(viewHdg) - viewHdg);   // bearing a off the view centre, on the horizon
+      if (xx === null || xx < 0 || xx > W) continue;
       ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(xx - fs, sh - (brg % 15 ? 7 : 12) * fs, 2 * fs, (brg % 15 ? 7 : 12) * fs);
       if (brg % (fs > 1.5 ? 30 : 15) === 0 || names[brg]) {
         ctx.font = '600 ' + px(14) + ' "DM Mono", monospace'; ctx.textAlign = 'center'; ctx.fillStyle = names[brg] ? '#fde047' : 'white';
         ctx.fillText(names[brg] || pad3(brg), xx, 17 * fs);
       }
     }
-    ctx.beginPath(); ctx.moveTo(W / 2 - 9 * fs, sh); ctx.lineTo(W / 2 + 9 * fs, sh); ctx.lineTo(W / 2, sh + 12 * fs); ctx.closePath(); ctx.fillStyle = '#fde047'; ctx.fill();
-    halo('TRACK ' + pad3(plan.trackHdg) + '°', W / 2, 68 * fs, '700 ' + px(20) + ' "Barlow Condensed", sans-serif', '#fde047', 'center');
+    // Yellow pointer = the track heading, wherever that now sits on the strip.
+    var offTrack = ((plan.trackHdg - viewHdg + 540) % 360) - 180, tx0 = stripX(offTrack);
+    var looking = Math.abs(offTrack) > 0.5;
+    if (tx0 !== null && tx0 > 0 && tx0 < W) {
+      ctx.beginPath(); ctx.moveTo(tx0 - 9 * fs, sh); ctx.lineTo(tx0 + 9 * fs, sh); ctx.lineTo(tx0, sh + 12 * fs); ctx.closePath(); ctx.fillStyle = '#fde047'; ctx.fill();
+    }
+    if (looking) {
+      ctx.fillStyle = 'white'; ctx.fillRect(W / 2 - fs, sh, 2 * fs, 10 * fs);
+      halo('LOOKING ' + pad3(viewHdg) + '°  (track is ' + Math.abs(Math.round(offTrack)) + '° to the ' + (offTrack > 0 ? 'right' : 'left') + ')', W / 2, 68 * fs,
+        '700 ' + px(18) + ' "Barlow Condensed", sans-serif', 'white', 'center');
+    } else halo('TRACK ' + pad3(plan.trackHdg) + '°', W / 2, 68 * fs, '700 ' + px(20) + ' "Barlow Condensed", sans-serif', '#fde047', 'center');
+    if (stillLoading) halo('Loading sharper imagery…', W - 10 * fs, sh + 22 * fs, '600 ' + px(15) + ' "Barlow Condensed", sans-serif', 'white', 'right');
     ctx.font = px(11) + ' sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(255,255,255,0.75)';
     ctx.fillText('Imagery © Esri, Maxar, Earthstar Geographics', W - 8, H - 8);
   }
 
   function googleEarthUrl(plan) {
     // Earth's URL describes a look-at point, the camera's range from it and the tilt.
-    var h = plan.exitAlt * 0.3048, phi = TRACK_PITCH * Math.PI / 180, tv = bearingVec(plan.trackHdg);
+    var hdg = ((plan.trackHdg + trackCam.yaw) % 360 + 360) % 360;
+    var h = plan.exitAlt * 0.3048, phi = Math.min(85, trackCam.pitch) * Math.PI / 180, tv = bearingVec(hdg);
     var ahead = h / Math.tan(phi);
     var ll = localToLatLon(plan.exit.x + tv.x * ahead, plan.exit.y + tv.y * ahead);
     return 'https://earth.google.com/web/@' + ll.lat.toFixed(6) + ',' + ll.lon.toFixed(6) + ',0a,' +
-      Math.round(h / Math.sin(phi)) + 'd,' + TRACK_VFOV + 'y,' + Math.round(plan.trackHdg) + 'h,' + (90 - TRACK_PITCH) + 't,0r';
+      Math.round(h / Math.sin(phi)) + 'd,' + Math.round(trackCam.fov) + 'y,' + Math.round(hdg) + 'h,' + Math.round(90 - Math.min(85, trackCam.pitch)) + 't,0r';
   }
 
   function renderTrack() {
@@ -3518,7 +3559,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     }
     html += ' Pull point is <b>' + km(plan.pullFromDzM) + '</b> from the DZ, bearing <b>' + pad3(plan.pullFromDzBrg) + '&deg;</b> from it.';
     document.getElementById('trackSummary').innerHTML = html;
-    document.getElementById('trackViewCap').textContent = 'View from ' + plan.exitAlt.toLocaleString() + ' ft at the exit point, facing ' + pad3(plan.trackHdg) + '°';
+    document.getElementById('trackViewCap').textContent = 'View from ' + plan.exitAlt.toLocaleString() + ' ft at the exit point, facing ' + pad3(plan.trackHdg + trackCam.yaw) + '°. Drag to look around, scroll or pinch to zoom.';
     document.getElementById('trackNote').innerHTML = 'Flat render of satellite imagery looking ' + TRACK_PITCH + '&deg; below the horizon, no terrain relief. ' +
       'Assumes a ' + Math.round(TRACK_FALL_MS * 2.237) + ' mph fall rate. <a href="' + googleEarthUrl(plan) + '" target="_blank" rel="noopener">Open this view in Google Earth</a> for full 3D.';
   }
@@ -3564,11 +3605,81 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       trackRunIn = ((Math.round(n) % 360) + 360) % 360;
       scheduleTrackRender();
     });
-    // Tap the view to fill the screen (turn a phone sideways for the biggest picture).
-    var $view = document.querySelector('#trackPanel .track-view');
-    $view.addEventListener('click', function() { $view.classList.toggle('expanded'); scheduleTrackRender(); });
+    // Look around: drag to turn and tilt, wheel or pinch to zoom. While moving,
+    // the view draws in coarse blocks; it sharpens shortly after you stop.
+    var $view = document.querySelector('#trackPanel .track-view'), $cv = document.getElementById('trackView');
+    var pointers = {}, pinchDist = 0, rafPending = false, settleTimer = null;
+    var clampCam = function() {
+      trackCam.pitch = Math.min(89, Math.max(3, trackCam.pitch));
+      trackCam.fov = Math.min(85, Math.max(10, trackCam.fov));
+      trackCam.yaw = ((trackCam.yaw + 540) % 360) - 180;
+    };
+    var moved = function() {
+      clampCam();
+      trackDragging = true;
+      if (!rafPending && trackLastPlan) {
+        rafPending = true;
+        requestAnimationFrame(function() { rafPending = false; if (trackLastPlan) renderTrackView(trackLastPlan); });
+      }
+      if (settleTimer) clearTimeout(settleTimer);
+      settleTimer = setTimeout(function() { trackDragging = false; renderTrack(); }, 220);
+    };
+    var degPerPx = function() { return trackCam.fov / ($cv.getBoundingClientRect().height || 600); };
+    $cv.addEventListener('pointerdown', function(e) {
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+      try { $cv.setPointerCapture(e.pointerId); } catch (err) {}
+      $cv.classList.add('dragging');
+      var ids = Object.keys(pointers);
+      if (ids.length === 2) pinchDist = Math.hypot(pointers[ids[0]].x - pointers[ids[1]].x, pointers[ids[0]].y - pointers[ids[1]].y);
+    });
+    $cv.addEventListener('pointermove', function(e) {
+      var prev = pointers[e.pointerId];
+      if (!prev) return;
+      var ids = Object.keys(pointers);
+      if (ids.length === 1) {
+        // Grab-the-ground feel: dragging right swings the view left, dragging down looks up.
+        var k = degPerPx();
+        trackCam.yaw -= (e.clientX - prev.x) * k;
+        if ($view.classList.contains('expanded') || e.pointerType === 'mouse') trackCam.pitch -= (e.clientY - prev.y) * k;
+        moved();
+      }
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (ids.length === 2) {
+        var d = Math.hypot(pointers[ids[0]].x - pointers[ids[1]].x, pointers[ids[0]].y - pointers[ids[1]].y);
+        if (pinchDist > 0 && d > 0) { trackCam.fov *= pinchDist / d; moved(); }
+        pinchDist = d;
+      }
+    });
+    var release = function(e) {
+      delete pointers[e.pointerId];
+      pinchDist = 0;
+      if (!Object.keys(pointers).length) $cv.classList.remove('dragging');
+    };
+    $cv.addEventListener('pointerup', release);
+    $cv.addEventListener('pointercancel', release);
+    $cv.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      trackCam.fov *= Math.exp(Math.max(-60, Math.min(60, e.deltaY)) * 0.004);
+      moved();
+    }, { passive: false });
+    $cv.addEventListener('dblclick', function() { resetTrackCam(); moved(); });
+
+    var setExpanded = function(on) {
+      $view.classList.toggle('expanded', on);
+      $view.querySelector('[data-tool=full]').textContent = on ? 'Close' : 'Full screen';
+      scheduleTrackRender();
+    };
+    $view.querySelectorAll('.track-tools button').forEach(function(b) {
+      b.addEventListener('click', function() {
+        var tool = b.getAttribute('data-tool');
+        if (tool === 'full') { setExpanded(!$view.classList.contains('expanded')); return; }
+        if (tool === 'reset') resetTrackCam();
+        else trackCam.fov *= tool === 'in' ? 0.7 : 1 / 0.7;
+        moved();
+      });
+    });
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && $view.classList.contains('expanded')) { $view.classList.remove('expanded'); scheduleTrackRender(); }
+      if (e.key === 'Escape' && $view.classList.contains('expanded')) setExpanded(false);
     });
     applyOpen();
     window.addEventListener('resize', scheduleTrackRender);
