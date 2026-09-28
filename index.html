@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Home-screen app: icon, name and standalone display on iPhone and Android -->
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DZ Manifest">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#1e293b">
 <title>DZ Manifest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -927,6 +936,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 .jf-day-word { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
 .jf-day.good .jf-day-word { color: #15803d; } .jf-day.marginal .jf-day-word { color: #b45309; } .jf-day.poor .jf-day-word { color: #b91c1c; }
 .jf-day-best { font-size: 11px; color: var(--slate-500); }
+.jf-start { color: #b45309; }
 .jf-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--slate-200); border-radius: 8px; }
 .jf-table { border-collapse: collapse; width: 100%; font-family: 'DM Mono', monospace; font-size: 12px; }
 .jf-table th, .jf-table td { padding: 5px 6px; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--slate-100); color: var(--slate-700); }
@@ -4290,6 +4300,10 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       var d = byDay[k];
       d.ops = d.hours.filter(function(s) { return s.isDay && s.hour >= JF_DAY_START && s.hour <= JF_DAY_END && s.time.slice(0, 13) >= nowKey; });
       d.p = d.ops.length ? d.ops.reduce(function(n, s) { return n + s.p; }, 0) / d.ops.length : null;
+      // The DZ makes its call first thing, so the start of the day matters more
+      // than a mean can show: score 08:00 to 10:00 separately while they are still ahead.
+      var start = d.ops.filter(function(s) { return s.hour <= JF_DAY_START + 2; });
+      d.start = start.length === 3 ? start.reduce(function(n, s) { return n + s.p; }, 0) / 3 : null;
       var best = null, run = [];
       d.ops.concat([null]).forEach(function(s) {
         if (s && s.p >= 0.6) { run.push(s); return; }
@@ -4349,6 +4363,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
         '<span class="jf-day-pct">' + (d.p != null ? Math.round(d.p * 100) + '%' : '&mdash;') + '</span>' +
         '<span class="jf-day-word">' + (v ? v.word : 'Finished') + '</span>' +
         '<span class="jf-day-best">' + jfWindow(d) + '</span>' +
+        (d.start != null && d.p != null && d.start < d.p - 0.15 ? '<span class="jf-day-best jf-start">Poor start: ' + Math.round(d.start * 100) + '% at 08:00 to 11:00</span>' : '') +
         '<span class="jf-day-conf">' + (idx >= 7 ? 'Low confidence' : idx >= 3 ? 'Medium confidence' : 'Good confidence') + '</span></button>';
     }).join('');
 
@@ -4393,6 +4408,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       var v = jfVerdict(sel.p);
       head = '<span class="jf-dot ' + v.cls + '"></span><b>' + jfDayLabel(sel.day, jfCfg.day) + ': jumping ' + v.word.toLowerCase() + '</b>, about <b>' + Math.round(sel.p * 100) +
         '%</b> across the ' + (jfCfg.day === 0 ? 'rest of the ' : '') + 'day. ' + jfWindow(sel) + '.' +
+        (sel.start != null && sel.start < sel.p - 0.15 ? ' <b>Poor start</b>: only ' + Math.round(sel.start * 100) + '% between 08:00 and 11:00, when the DZ makes its call, so expect a late go or a call-off.' : '') +
         (worst ? ' Main risk: ' + esc(worst.limiting.charAt(0).toLowerCase() + worst.limiting.slice(1)) + ' (' + ('0' + worst.hour).slice(-2) + ':00).' : ' Nothing close to the limits.');
     }
     $call.innerHTML = head;

@@ -13,7 +13,7 @@ Live skydiving manifest display for multiple dropzones, picked from a selector i
 
 ### Any static host
 
-Serve `index.html` from any web server or CDN. No build step or dependencies required (fonts load from Google Fonts CDN).
+Serve `index.html`, `manifest.webmanifest` and the `icons/` folder from any web server or CDN. Added to an iPhone or Android home screen it opens as a standalone app with its own icon. No build step or dependencies required (fonts load from Google Fonts CDN).
 
 ### Local
 
@@ -71,6 +71,15 @@ It scores each hour against British Skydiving's limits (Operations Manual, secti
 - Day cards run the full 16 days Open-Meteo offers, each with the mean likelihood over daylight hours 08:00 to 19:00 and the best run of hours at 60% or better. Beyond three days is marked medium confidence, beyond a week low confidence.
 - The hourly table tints the cells that are holding the hour back. Estimated cloud base is the temperature and dew point spread x 400 ft.
 - Calibration lives in `jfScoreHour()` and `JF_GUST_WEIGHT` in `index.html`. Model gusts run above a DZ anemometer, so only 40% of the gust excess counts; that, and treating up to ~60% broken low cloud as jumpable, was set against Headcorn flying lifts all afternoon on 18/09/2026 in forecast 13 kt gusting 25 kt under 40 to 60% cumulus. The winds-aloft factors were added after 19/09/2026, when Headcorn, Langar and Netheravon all called the day off the evening before: ground wind was only slightly up on the 18th, but it was 30 to 40 kt at 2,500 ft and 40 to 55 kt at 10,000 ft. With them the app gives that day 12%, 6% and 3%, and still gives the hours Headcorn jumped on the 18th 75 to 96%.
+
+Calibration log (Headcorn unless stated):
+
+| Date | What happened | What the forecast scored | Change made |
+|---|---|---|---|
+| 18/09/2026 | Flew lifts all afternoon in 13 kt gusting 25, 40 to 60% cumulus | Called Unlikely at first | Gust weight 0.4; broken cumulus to 60% treated as jumpable |
+| 19/09/2026 | Headcorn, Langar and Netheravon all called it off the evening before | Marginal 41% at Headcorn; ground wind only slightly up on the 18th, but 30 to 40 kt at 2,500 ft and 40 to 55 kt at 10,000 ft | Winds aloft and low-base factors added; now 12%, 6%, 3% |
+| 27/09/2026 | 13 lifts to 12,000 ft, 07:22 to 14:59, then stopped | Hours flown scored 37 to 98%, the two hours after they stopped 8% and 1%; 95 to 100% mid cloud from 13:00 was jumped through, so mid cloud stays a soft factor | None to the scoring |
+| 28/09/2026 | Cancelled in the morning (Monday) | 08:00 to 11:00 scored 29 to 46% under low cloud at 1,000 to 2,000 ft; a forecast clearance at 12:00 to 14:00 lifted the day figure to 49% Marginal | Day cards and headline now show a "poor start" figure for 08:00 to 11:00, when the DZ makes its call |
 
 It is a planning guide only. The CI makes the call.
 
