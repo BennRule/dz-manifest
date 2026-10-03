@@ -1570,6 +1570,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   let wallboardMsg = null;
   let lastUpdateTime = null;
   let fetchFailed = false;   // true when every proxy in the chain failed to deliver the manifest
+  let manifestAccessDenied = false;  // true when GoSkydive refuses the key for this DZ (e.g. viewManifest permission removed)
   let viewFilter = 'active'; // 'active' or 'all'
   let selectedDate = null;   // null = today (live); 'YYYY-MM-DD' = viewing a past day (read-only)
   let weather = null;        // Open-Meteo forecast (ground + winds aloft)
@@ -1672,13 +1673,18 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
       var timer = setTimeout(function() { ctrl.abort(); }, PROXY_TIMEOUT_MS);
       try {
         var res = await fetch(proxies[i] + encodeURIComponent(apiUrl), { headers: headers(), signal: ctrl.signal });
-        if (!res.ok) { lastErr = new Error('HTTP ' + res.status); continue; }
         var text = await res.text();
-        try {
-          return JSON.parse(text);
-        } catch (e) {
-          lastErr = new Error('non-JSON response (proxy challenge page?)');
+        var parsed = null;
+        try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+        if (!res.ok) {
+          // A non-2xx that still carries a GoSkydive error body (e.g. 403 "does not
+          // have permission viewManifest") is a definitive answer, not a flaky
+          // proxy — hand it back so the caller can show the plain access note.
+          if (parsed && parsed.message) return parsed;
+          lastErr = new Error('HTTP ' + res.status); continue;
         }
+        if (parsed !== null) return parsed;
+        lastErr = new Error('non-JSON response (proxy challenge page?)');
       } catch (e) {
         lastErr = (e && e.name === 'AbortError') ? new Error('proxy timed out') : e; // network / CORS / timeout
       } finally {
@@ -1812,6 +1818,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     wallboardMsg = null;
     colleagueNames = {};
     fetchFailed = false;
+    manifestAccessDenied = false;
     lastUpdateTime = new Date();
     setStatus('ok', 'Live');
     render();
@@ -1854,7 +1861,24 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
 
     if (reqDz !== config.dzId) return;              // dropzone switched mid-request
     try {
-      if (manifestData.message) throw new Error('Manifest API: ' + manifestData.message);
+      if (manifestData.message) {
+        // A refused key (e.g. the viewManifest permission removed in server
+        // housekeeping) is a known, deliberate state — show a plain note and hide
+        // the manifest chrome, not GoSkydive's raw error text.
+        if (/permission|authoriz|forbidden|viewManifest/i.test(manifestData.message)) {
+          manifestAccessDenied = true;
+          manifests = []; planesMap = {}; colleagueNames = {};
+          fetchFailed = false;
+          lastUpdateTime = new Date();
+          setStatus('error', 'No manifest');
+          $errorBanner.textContent = esc(currentDz().name) + ' manifest is currently unavailable \u2014 weather and planning tools still work.';
+          $errorBanner.classList.add('visible');
+          render();
+          return;
+        }
+        throw new Error('Manifest API: ' + manifestData.message);
+      }
+      manifestAccessDenied = false;
 
       var today = activeDate();
       manifests = (manifestData.manifestCollection || []).filter(function(m) {
@@ -2164,7 +2188,13 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
   }
 
   // --- Render ---
+  function applyManifestAccess() {
+    var els = [document.getElementById('metricsBar'), document.getElementById('aircraftBar'), document.querySelector('.filter-bar')];
+    els.forEach(function(el) { if (el) el.style.display = manifestAccessDenied ? 'none' : ''; });
+  }
+
   function render() {
+    applyManifestAccess();
     renderMetrics();
     renderBanners();
     renderAircraft();
@@ -2367,7 +2397,9 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     }
     if (sorted.length === 0) {
       var msg;
-      if (fetchFailed) {
+      if (manifestAccessDenied) {
+        msg = esc(currentDz().name) + ' manifest is currently unavailable. Weather, the jump forecast and the planning tools still work.';
+      } else if (fetchFailed) {
         // All proxies exhausted — don't pretend the dropzone is just quiet.
         msg = 'Connection failed — couldn\'t reach the manifest service. Check the proxy in Settings.';
       } else if (manifests.length === 0) {
@@ -3164,6 +3196,7 @@ a.card-plane-reg:hover, a.ac-reg:hover { text-decoration: underline; }
     aircraftLive = {};
     colleagueNames = {};
     prevManifestStatuses = {};
+    manifestAccessDenied = false;
     weatherHold = false;
     wallboardMsg = null;
     lastUpdateTime = null;
